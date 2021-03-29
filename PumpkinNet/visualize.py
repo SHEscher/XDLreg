@@ -6,16 +6,89 @@ Some functions to visualize MRIs
 Author: Simon M. Hofmann | <[firstname].[lastname][at]cbs.mpg.de> | 2018-2020
 """
 # %% Import
+import os
+import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from prune_image import *
 
+# %% Global vars << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
-# %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 planes = ["sagittal/longitudinal", "transverse/superior/horizontal", "coronal/posterior/frontal"]
 
 
 # %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
+
+def find_edges(x3d, sl=False):
+    # print("x3d shape", x3d.shape)
+
+    bg = x3d.min()  # usually: 0
+
+    # # Find planes with first brain-data (i.e. being not black)
+    # Find 'lower' planes (i.e. low, left, back, respectively)
+    il, jl, kl = 0, 0, 0
+    while np.all(x3d[il, :, :] == bg):  # sagittal slide
+        il += 1
+    while np.all(x3d[:, jl, :] == bg):  # transverse slide
+        jl += 1
+    while np.all(x3d[:, :, kl] == bg):  # coronal/posterior/frontal
+        kl += 1
+
+    # Find 'upper' planes (i.e. upper, right, front, respectively)
+    iu, ju, ku = np.array(x3d.shape) - 1
+    while np.all(x3d[iu, :, :] == bg):  # sagittal/longitudinal
+        iu -= 1
+    while np.all(x3d[:, ju, :] == bg):  # transverse/inferior/horizontal
+        ju -= 1
+    while np.all(x3d[:, :, ku] == bg):  # coronal/posterior/frontal
+        ku -= 1
+
+    # plt.imshow(x3d[:, :, kl])  # first brain
+    # plt.imshow(x3d[:, :, kl-1])  # black
+    # plt.imshow(x3d[:, :, ku])  # first brain
+    # plt.imshow(x3d[:, :, ku+1])  # black
+    if sl:  # return slices
+        return slice(il, iu + 1), slice(jl, ju + 1), slice(kl, ku + 1)
+
+    else:  # return coordinates
+        return il, iu, jl, ju, kl, ku
+
+
+def get_brain_axes_length(x3d):
+
+    tp = False
+    sic = None
+    if type(x3d) == tuple:  # (sic, brain)
+        tp = True
+        sic = x3d[0]
+        x3d = x3d[1]
+
+    il, iu, jl, ju, kl, ku = find_edges(x3d)
+    axes_lengths = [iu + 1 - il, ju + 1 - jl, ku + 1 - kl]
+
+    if tp:
+        return sic, axes_lengths
+    else:
+        return axes_lengths
+
+
+def max_of_axes(x3d):
+    tp = False
+    sic = None
+    if type(x3d) == tuple:  # (sic, brain)
+        tp = True
+        sic = x3d[0]
+        x3d = x3d[1]
+
+    if isinstance(x3d, np.ndarray):
+        longest_axis = np.max(get_brain_axes_length(x3d))
+    else:
+        longest_axis = np.nan
+
+    if tp:
+        return sic, longest_axis
+    else:
+        return longest_axis
+
 
 def prep_save_folder(save_folder):
     save_folder = os.path.join(save_folder, "")  # adds '/' if not there
@@ -124,7 +197,6 @@ def plot_mid_slice(mri, axis=None, figname=None, edges=True, c_range=None,
             fig.suptitle(suptitle, fontsize=14)
 
         # # Planes
-        # planes = ["sagittal/longitudinal", "transverse/superior/horizontal","coronal/posterior/frontal"]
         ims = []
         axs = []
         for ip, plane in enumerate(planes):
@@ -173,145 +245,4 @@ def plot_mid_slice(mri, axis=None, figname=None, edges=True, c_range=None,
         else:
             plt.show()
 
-
-# TODO For fancy slicing, check https://docs.pyvista.org/examples/01-filter/slicing.html
-def slice_through(mri, every=2, axis=0, figname=None, edges=True, c_range=None,
-                  save=False, save_folder="./TEMP/", **kwargs):
-    save_folder = prep_save_folder(save_folder)
-
-    assert axis in range(3), f"axis={axis} is not valid. Take 0, 1 or 2."
-
-    nrow_sq_grid = 5
-    n_slices = int(mri.shape[0] / every)
-    n_figs = int(np.round(n_slices / nrow_sq_grid ** 2))
-
-    axis_name = "sagittal"
-    if axis != 0:
-        axis_name = "transverse" if axis == 1 else "coronal"
-
-    fig_n = 1
-    sub_n = 1
-    fig = None  # init
-    for scl in range(n_slices):
-        if scl % (nrow_sq_grid ** 2) == 0:
-            fig = plt.figure(f"{figname if figname else ''} {axis_name} slice-through {fig_n}|{n_figs}",
-                             figsize=(10, 10))
-
-        plt.subplot(nrow_sq_grid, nrow_sq_grid, sub_n)
-
-        plot_slice(mri, axis, idx_slice=scl + (every - 1), edges=edges, c_range=c_range, **kwargs)
-
-        plt.tight_layout()
-
-        sub_n += 1
-
-        if ((sub_n - 1) % (nrow_sq_grid ** 2) == 0) or (scl + 1 == n_slices):
-            if save:
-                fig.savefig(fname=f"{save_folder}{figname + ' ' if figname else ''}{axis_name} "
-                                  f"slice-through {fig_n}|{n_figs}.png")
-                plt.close()
-
-            fig_n += 1
-            sub_n = 1
-
-
-def multi_slice_viewer(mri, axis=0, **kwargs):
-    """Source: https://www.datacamp.com/community/tutorials/matplotlib-3d-volumetric-data"""
-
-    # TODO [Optional!] 3 axes plot, similar to plot_mid_slice()
-
-    def remove_keymap_conflicts(new_keys_set):
-        for prop in plt.rcParams:
-            if prop.startswith('keymap.'):
-                keys = plt.rcParams[prop]
-                remove_list = set(keys) & new_keys_set
-                for key in remove_list:
-                    keys.remove(key)
-
-    def apply_rot(vol_slice):
-        if axis > 0:
-            axes = (0, 1) if axis == 1 else (1, 0)
-            vol_slice = np.rot90(vol_slice, axes=axes)
-        return vol_slice
-
-    def previous_slice(ax_):
-        volume = ax_.volume
-        ax_.index = (ax_.index - 1) % volume.shape[axis]  # wrap around using %
-        slice_ax = [slice(None)] * 3
-        slice_ax[axis] = slice(ax_.index, ax_.index+1, None)
-        ax_.images[0].set_array(apply_rot(volume[slice_ax].squeeze()))
-
-    def next_slice(ax_):
-        volume = ax_.volume
-        ax_.index = (ax_.index + 1) % volume.shape[axis]
-        slice_ax = [slice(None)] * 3
-        slice_ax[axis] = slice(ax_.index, ax_.index + 1, None)
-        ax_.images[0].set_array(apply_rot(volume[slice_ax].squeeze()))
-
-    def process_key(event):
-        _fig = event.canvas.figure
-        _ax = _fig.axes[0]
-        if event.key == 'j':
-            previous_slice(_ax)
-        elif event.key == 'k':
-            next_slice(_ax)
-        print(f"At slice: {_ax.index}\r", end="")
-        _ax.set_title(_ax.get_title().split("slice")[0] + f"slice {_ax.index}")
-        _fig.canvas.draw()
-
-    # Execute
-    remove_keymap_conflicts({'j', 'k'})
-    cprint("\nPress 'j' and 'k' to slide through the volume.", 'y')
-
-    # Prepare plot
-    fig, ax = plt.subplots()
-
-    # Unpack kwargs
-    window_title = kwargs.pop('window_title', "MRI Slice Slider")
-    fig.canvas.set_window_title(window_title)  # fig.canvas.get_window_title()
-
-    cbar = kwargs.pop("cbar", False)
-    cbar_range = kwargs.pop("cbar_range") if ("cbar_range" in kwargs.keys() and cbar) else None
-    # cbar_range: only if cbar is active
-
-    ax.volume = mri
-    ax.index = mri.shape[axis] // 2
-    ax.set_title(f"{planes[axis]} | slice {ax.index}")
-
-    # Plot
-    # im = ax.imshow(mri[ax.index], **kwargs)
-    im = plot_slice(mri=mri, axis=axis, idx_slice=ax.index, **kwargs)
-
-    if cbar:
-        axbar = fig.colorbar(im)
-        if cbar_range:
-            axbar.ax.set_yticklabels(
-                labels=[f"{tick:.2g}" for tick in np.linspace(cbar_range[0], cbar_range[1],
-                                                              len(axbar.get_ticks()))])
-    fig.canvas.mpl_connect('key_press_event', process_key)
-    # plt.show()
-
-
-# TODO get atlas and apply: see z_playground
-# TODO if MNI space, allow to underlie mni template
-def apply_atlas(mri):
-    pass
-
-
-# TODO transparent 3D plot: see z_playground
-def plot_3d(mri):
-    """Adapt: https://terbium.io/2017/12/matplotlib-3d/"""
-    pass
-
-
-def plot_transparent(plot_fct, img, cmap=None, **kwargs):
-    cm_fct = eval(f'plt.cm.{plt.get_cmap().name if cmap is None else cmap}')
-    colimg = cm_fct(img)  # == plt.cm.viridis(img), if default cmap (i.e., None):
-    # set alpha to zero, where image zero
-    colimg[..., -1][np.where(img == 0.0)] = 0.0  # TODO check if possible for rescaled images (-1, 1)
-    plot_fct(colimg, **kwargs)
-
-
-def close_plots():
-    plt.close()
-# < o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<  END
+# << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< END

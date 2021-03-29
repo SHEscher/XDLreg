@@ -101,7 +101,7 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
                                                                            only_test=False)
 
     # Create model
-    _model_name = f"PumpkinNet_{pumpkin_set.name.split('_')[-1]}"
+    _model_name = f"PumpkinNet_{pumpkin_set.name.split('N-')[-1]}"
     model = create_simulation_model(name=_model_name, target_bias=np.mean(ydata))
 
     # Create folders

@@ -108,7 +108,7 @@ def create_relevance_dict(model_name, subset="test", analyzer_type="lrp.sequenti
 
         import innvestigate
 
-        _model = keras.models.load_model(os.path.join(p2results, model_name + "_final.h5"))
+        _model = keras.models.load_model(os.path.join(p2results, "model", model_name + "_final.h5"))
 
         _x, _y = get_pumpkin_set(n_samples=2000,
                                  uniform="non-uni" not in model_name).data2numpy(for_keras=True)

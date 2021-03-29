@@ -13,10 +13,11 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 import os
 import numpy as np
 import innvestigate
+import matplotlib.pyplot as plt
 
 from utils import cprint
-from PumpkinNet.visualize import *
-from apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
+from PumpkinNet.visualize import prep_save_folder, plot_mid_slice
+from LRP.apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
 
 # %% << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 

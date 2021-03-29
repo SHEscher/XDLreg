@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import keras
 
-from utils import p2results, cprint
+from utils import p2results, cprint, find
 from PumpkinNet.pumpkinnet import crop_model_name
 from PumpkinNet.simulation_data import get_pumpkin_set, split_simulation_data
 from LRP.create_heatmaps import create_relevance_dict, plot_simulation_heatmaps
@@ -25,13 +25,16 @@ from LRP.create_heatmaps import create_relevance_dict, plot_simulation_heatmaps
 if __name__ == "__main__":
 
     # # Create heatmaps for all models on testset
-    for fn in []:  # os.listdir(p2results):  # TODO TEMP toggled
-        # find(fname="final.h5", folder=p2results, typ="file", exclusive=False, fullname=False,
-        #      abs_path=True, verbose=False)
+
+    fn = find(fname="final.h5", folder=p2results, typ="file", exclusive=False, fullname=False,
+              abs_path=True, verbose=False)
+
+    for fn in [fn.split("/model/")[-1]]:  # os.listdir(p2results):  # TODO TEMP toggled
         if "final.h5" in fn:
             model_name = crop_model_name(model_name=fn)
             cprint(f"\nCreate heatmaps for {model_name}\n", col="p", fm="bo")
             rel_obj = create_relevance_dict(model_name=model_name, subset="test", save=True)
+            break
 
             # Plot heatmaps for N random tori
             plot_simulation_heatmaps(model_name=model_name, n_subjects=20, subset="test", pointers=True,
