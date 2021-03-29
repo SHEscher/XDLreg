@@ -27,7 +27,7 @@ setup(
     ],
     packages=['PumpkinNet', 'LRP'],  # OR find_packages(exclude=("...",))
     include_package_data=True,
-    install_requires=["numpy as", "matplotlib", "scikit-image", "Keras==2.2.4", "innvestigate"],
+    install_requires=["numpy", "matplotlib", "seaborn", "scikit-image", "Keras==2.2.4", "innvestigate"],
     entry_points={
         "console_scripts": [
             "xdlreg=XDLreg.__main__:main",

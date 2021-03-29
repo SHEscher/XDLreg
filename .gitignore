@@ -1,6 +1,5 @@
-# MISC
-.DS_Store
-.idea/
+# Project specific
+Data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -131,3 +130,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# MISC
+.DS_Store
+.idea/

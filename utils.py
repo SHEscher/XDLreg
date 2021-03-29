@@ -1052,13 +1052,16 @@ def end():
     cprint("\n" + "*<o>*" * 9 + "  END  " + "*<o>*" * 9 + "\n", col='p', fm='bo')
 
 
-
 # %% Config project paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-root_path = "/XDLreg"
+root_path = "XDLreg"
+
 if os.getcwd() not in sys.path:
     sys.path.append(os.getcwd())
 root_path = list(filter(lambda x: root_path in x, sys.path))[0].split(root_path)[0] + root_path
+
+p2data = os.path.join(root_path, "Data")
+p2results = os.path.join(root_path, "Results")
 
 # for subfold in ["PumpkinNet", "LRP"]:
 #     if os.path.join(root_path, subfold) not in sys.path:

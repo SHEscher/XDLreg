@@ -1,8 +1,8 @@
 # XDLreg
 
-`[Last update: 2021-03-29]`
-
 *Simulation study on explainable deep learning (XDL) for regression tasks.*
+
+`[Last update: 2021-03-29]`
 
 <img src="Pumpkin.jpg" alt="PumpkinNet" width="350">
 
