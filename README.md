@@ -7,7 +7,7 @@
 <img src="Pumpkin.jpg" alt="PumpkinNet" width="350">
 
 ## PumpkinNet
-In `./PumpkinNet/` is the implementation of 2D-convolutional neural networks (CNN) model for the prediction of *age* from 2D simulated images (*Pumpkins*).  
+In `./PumpkinNet/` is the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*Pumpkins*).
 
 ## LRP
 In `./LRP/` one can find the implementation of the *Layer-wise relevance propagation algorithm* (LRP), which highlights information in the input space being relevant for the given model prediction. <br>
