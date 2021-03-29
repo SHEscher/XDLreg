@@ -2,9 +2,9 @@
 
 `[Last update: 2021-03-29]`
 
-![PumpkinNet](Pumpkin.jpg)
+*Simulation study on explainable deep learning (XDL) for regression tasks.*
 
-Simulation study on explainable deep learning (XDL) for regression tasks.
+![PumpkinNet](Pumpkin.jpg =100x)
 
 ## PumpkinNet
 In `./PumpkinNet/` is the implementation of 2D-convolutional neural networks (CNN) model for the prediction of *age* from 2D simulated images (*Pumpkins*).  
@@ -15,3 +15,7 @@ Here, the LRP will be applied on the predictions of the PumpkinNet extracting pi
 
 ## Subanalysis
 The subfolder `./Subanalysis/`  contains mainly jupyter notebooks for subanalyses.
+
+## Cite
+
+*add citation*
