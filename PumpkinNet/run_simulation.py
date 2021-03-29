@@ -34,11 +34,12 @@ if __name__ == "__main__":
             model_name = crop_model_name(model_name=fn)
             cprint(f"\nCreate heatmaps for {model_name}\n", col="p", fm="bo")
             rel_obj = create_relevance_dict(model_name=model_name, subset="test", save=True)
-            break
 
             # Plot heatmaps for N random tori
             plot_simulation_heatmaps(model_name=model_name, n_subjects=20, subset="test", pointers=True,
                                      true_scale=False)
+
+            break
 
             # Check sum relevance depending on model prdiction
             model = keras.models.load_model(os.path.join(p2results, fn))

@@ -15,20 +15,24 @@ from PumpkinNet.simulation_data import get_pumpkin_set, split_simulation_data
 from LRP.LRP import apply_colormap, create_cmap, gregoire_black_firered
 
 
-# %% Create heatmaps & plots >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
+# %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
+p2relevance = os.path.join(p2results, "relevance")
+
+# %% Create heatmaps & plots << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
 
 def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
-                             analyzer_type="lrp.sequential_preset_a", pointers=True,
-                             cbar=False, true_scale=False):
+                             analyzer_type="lrp.sequential_preset_a", pointers=True, cbar=False,
+                             true_scale=False):
 
     # Get model
-    _model = keras.models.load_model(os.path.join(p2results, model_name + "_final.h5"))
+    _model = keras.models.load_model(os.path.join(p2results, "model", model_name + "_final.h5"))
 
     # Get relevance maps
     rel_obj = create_relevance_dict(model_name=model_name, subset=subset, analyzer_type=analyzer_type)
 
     # Prep data
-    pdata = get_pumpkin_set(n_samples=2000, uniform="non-uni" not in model_name)
+    pdata = get_pumpkin_set(n_samples=int(_model.name.split("_")[-2]),
+                            uniform="non-uni" not in model_name)
     _x, _y = pdata.data2numpy(for_keras=True)
     if subset == "test":
         xdata, ydata = split_simulation_data(xdata=_x, ydata=_y, only_test=True)
@@ -63,8 +67,10 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
         plt.tight_layout()
 
         for fm in ["png", "pdf"]:
-            plt.savefig(os.path.join(p2results, _model.name,
-                                     f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}.{fm}"))
+            parent_dir = os.path.join(p2relevance, _model.name, "plots")
+            if not os.path.exists(parent_dir):
+                os.makedirs(parent_dir)
+            plt.savefig(os.path.join(parent_dir, f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}.{fm}"))
 
         if pointers:
             phead = pdata.data[didx[0]+sub]
@@ -95,7 +101,10 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
             plt.tight_layout()
 
             for fm in ["png", "pdf"]:
-                plt.savefig(os.path.join(p2results, _model.name,
+                parent_dir = os.path.join(p2relevance, _model.name, "plots")
+                if not os.path.exists(parent_dir):
+                    os.makedirs(parent_dir)
+                plt.savefig(os.path.join(parent_dir,
                                          f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}_pointer.{fm}"))
         plt.close()
 
@@ -103,14 +112,15 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
 def create_relevance_dict(model_name, subset="test", analyzer_type="lrp.sequential_preset_a", save=True):
 
     try:
-        rel_obj = load_obj(name=model_name + f"_relevance-maps_{subset}-set", folder=p2results)
+        rel_obj = load_obj(name=f"relevance-maps_{subset}-set", folder=os.path.join(p2relevance,
+                                                                                    model_name))
     except FileNotFoundError:
 
         import innvestigate
 
         _model = keras.models.load_model(os.path.join(p2results, "model", model_name + "_final.h5"))
 
-        _x, _y = get_pumpkin_set(n_samples=2000,
+        _x, _y = get_pumpkin_set(n_samples=int(_model.name.split("_")[-2]),
                                  uniform="non-uni" not in model_name).data2numpy(for_keras=True)
         if subset == "test":
             xdata, ydata = split_simulation_data(xdata=_x, ydata=_y, only_test=True)
@@ -137,6 +147,7 @@ def create_relevance_dict(model_name, subset="test", analyzer_type="lrp.sequenti
         #                loop_name="Generate Heatmaps")
 
         if save:
-            save_obj(obj=rel_obj, name=model_name + f"_relevance-maps_{subset}-set", folder=p2results)
+            save_obj(obj=rel_obj, name=f"relevance-maps_{subset}-set", folder=os.path.join(p2relevance,
+                                                                                           model_name))
 
     return rel_obj
