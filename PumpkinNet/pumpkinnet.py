@@ -12,11 +12,11 @@ import numpy as np
 from utils import cprint, p2results
 from PumpkinNet.simulation_data import split_simulation_data
 
+
 # %% ConvNet ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><
 
-
-def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98, 98), class_task=False,
-                            leaky_relu=True, batch_norm=False):
+def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98, 98), batch_norm=False,
+                            class_task=False):
     # TODO ADD CITATION / DOI
     """
     This is a 2D adaptation of the model reported in Hofmann et al. (2021)
@@ -25,12 +25,9 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
     if target_bias is not None:
         cprint(f"\nGiven target bias is {target_bias:.3f}\n", "y")
 
-    if leaky_relu and not batch_norm:
-        actfct = None
-    else:
-        actfct = "relu"
+    actfct = "relu"
 
-    kmodel = keras.Sequential(name=name)  # OR: Sequential([keras.layer.Conv3d(....), layer...])
+    kmodel = keras.Sequential(name=name)  # OR: Sequential([keras.layer.Conv2d(....), layer...])
 
     # 3D-Conv
     if batch_norm:
@@ -41,37 +38,27 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
         kmodel.add(keras.layers.Conv2D(filters=16, kernel_size=(3, 3), padding="SAME",
                                        activation=actfct, input_shape=input_shape + (1,)))
         # auto-add batch:None, last: channels
-    if leaky_relu:
-        kmodel.add(keras.layers.LeakyReLU(alpha=.2))  # lrelu
     kmodel.add(keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding="SAME"))
 
     if batch_norm:
         kmodel.add(keras.layers.BatchNormalization())
     kmodel.add(keras.layers.Conv2D(filters=16, kernel_size=(3, 3), padding="SAME", activation=actfct))
-    if leaky_relu:
-        kmodel.add(keras.layers.LeakyReLU(alpha=.2))
     kmodel.add(keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding="SAME"))
 
     if batch_norm:
         kmodel.add(keras.layers.BatchNormalization())
     kmodel.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), padding="SAME", activation=actfct))
-    if leaky_relu:
-        kmodel.add(keras.layers.LeakyReLU(alpha=.2))
     kmodel.add(keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding="SAME"))
 
     if batch_norm:
         kmodel.add(keras.layers.BatchNormalization())
     kmodel.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), padding="SAME", activation=actfct))
-    if leaky_relu:
-        kmodel.add(keras.layers.LeakyReLU(alpha=.2))
     kmodel.add(keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding="SAME"))
 
     # 3D-Conv (1x1x1)
     if batch_norm:
         kmodel.add(keras.layers.BatchNormalization())
     kmodel.add(keras.layers.Conv2D(filters=32, kernel_size=(1, 1), padding="SAME", activation=actfct))
-    if leaky_relu:
-        kmodel.add(keras.layers.LeakyReLU(alpha=.2))
     kmodel.add(keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding="SAME"))
 
     if batch_norm:
@@ -81,8 +68,6 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
     kmodel.add(keras.layers.Flatten())
     kmodel.add(keras.layers.Dropout(rate=.5))
     kmodel.add(keras.layers.Dense(units=64, activation=actfct))
-    if leaky_relu:
-        kmodel.add(keras.layers.LeakyReLU(alpha=.2))
 
     # Output
     if not class_task:
@@ -109,32 +94,30 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
     return kmodel
 
 
-def train_simulation_model(pumpkin_set, leaky_relu=False, epochs=80, batch_size=4):
+def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
     # Prep data for model
     xdata, ydata = pumpkin_set.data2numpy(for_keras=True)
     x_train, x_val, x_test, y_train, y_val, y_test = split_simulation_data(xdata=xdata, ydata=ydata,
                                                                            only_test=False)
 
     # Create model
-    _model_name = f"PumpkinNet_{'leaky' if leaky_relu else ''}ReLU_{pumpkin_set.name.split('_')[-1]}"
-    model = create_simulation_model(name=_model_name,
-                                    target_bias=np.mean(ydata),
-                                    leaky_relu=leaky_relu)
+    _model_name = f"PumpkinNet_{pumpkin_set.name.split('_')[-1]}"
+    model = create_simulation_model(name=_model_name, target_bias=np.mean(ydata))
 
     # Create folders
-    if not os.path.exists(os.path.join(p2results, model.name)):
-        os.mkdir(os.path.join(p2results, model.name))
+    if not os.path.exists(os.path.join(p2results, "model", model.name)):
+        os.makedirs(os.path.join(p2results, "model", model.name))
 
     # # Save model progress (callbacks)
     # See also: https://www.tensorflow.org/tutorials/keras/save_and_load
     callbacks = [keras.callbacks.ModelCheckpoint(
-        filepath=f"{p2results}{model.name}" + "_{epoch}.h5",
+        filepath=f"{p2results}/model/{model.name}" + "_{epoch}.h5",
         save_best_only=True,
         save_weights_only=False,
         period=10,
         monitor="val_loss",
         verbose=1),
-        keras.callbacks.TensorBoard(log_dir=f"{p2results}{model.name}/")]
+        keras.callbacks.TensorBoard(log_dir=f"{p2results}/model/{model.name}/")]
     # , keras.callbacks.EarlyStopping()]
 
     # # Train the model
@@ -147,11 +130,11 @@ def train_simulation_model(pumpkin_set, leaky_relu=False, epochs=80, batch_size=
                         validation_data=(x_val, y_val))
 
     # Save final model (weights+architecture)
-    model.save(filepath=f"{p2results}{model.name}_final.h5")  # HDF5 file
+    model.save(filepath=f"{p2results}/model/{model.name}_final.h5")  # HDF5 file
 
     # Report training metrics
     # print('\nhistory dict:', history.history)
-    np.save(file=f"{p2results}{model.name}_history", arr=history.history)
+    np.save(file=f"{p2results}/model/{model.name}_history", arr=history.history)
 
     # # Evaluate the model on the test data
     cprint(f'\nEvaluate {model.name} on test data ...', 'b')
