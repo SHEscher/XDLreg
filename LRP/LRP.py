@@ -23,18 +23,19 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]cbs.mpg.de> | 2019, 2020
 import innvestigate
 import nibabel as nb
 
+from utils import root_path
+from PumpkinNet.train_kerasMRInet import load_trained_model, crop_model_name
+from PumpkinNet.visualize import *
+from apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
+
 # import sys
 # import os
 # sys.path.append((os.path.abspath(".").split("DeepAge")[0] + "DeepAge/Analysis/Modelling/MRInet/"))
 
-from visualize_mri import *
-from apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
-from train_kerasMRInet import load_trained_model, crop_model_name
-
 # %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 # Paths
-p2fileroot = "/data/pt_02238/DeepAge/" if check_system() == "MPI" else "../../../"
-p2intrprt_rslts = os.path.join(p2fileroot, "Results/Interpretation/")
+
+p2intrprt_rslts = os.path.join(root_path, "Results/Interpretation/")
 
 
 # %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
@@ -100,7 +101,6 @@ def non_zero_analyzer_and_clim(sub_nr, a, t, t_y, analy_type, save_folder):
 
 def plot_heatmap(sub_nr, t, t_y, ipt, analyzer_obj, analyzer_type, fix_clim=None, fn_suffix="",
                  rendermode="alpha", save_folder="", save_plot=True, **kwargs):
-
     a = analyzer_obj.copy()
 
     save_folder = prep_save_folder(os.path.join("./processed/Keras/Interpretation/", save_folder))
@@ -173,7 +173,6 @@ def plot_heatmap(sub_nr, t, t_y, ipt, analyzer_obj, analyzer_type, fix_clim=None
 def apply_analyzer_and_plot_heatmap(subjects, mris, targets, pre_model, ls_analy_type, binary_cls,
                                     fix_clim=None, ls_suptitles=None,
                                     neuron_analysis=False, classes=None, save_folder=""):
-
     # Check argument
     if ls_suptitles:
         assert len(ls_suptitles) == len(subjects), "'ls_suptitles' must have same length as subjects!"
@@ -249,7 +248,6 @@ def apply_analyzer_and_plot_heatmap(subjects, mris, targets, pre_model, ls_analy
 
 def create_heatmap_nifti(sic, model_name, analyzer_type='lrp.sequential_preset_a', analyzer_obj=None,
                          save=False, logging=False, **kwargs):
-
     # TODO function works currently only for models which were trained on pruned & cubified MRIs
 
     model_name = crop_model_name(model_name=model_name)  # remove '_final.h5' from name

@@ -24,7 +24,7 @@ from LRP import (apply_analyzer_and_plot_heatmap, analyze_model, plot_heatmap, c
                  p2intrprt_rslts)
 from load_mri_data import (load_raw_study_table, get_mni_template, get_global_max_axis, prune_mri,
                            pred_classes, mri_sequences, age_of_sic, pd, nb)
-from meta_functions import *
+from utils import *
 from train_kerasMRInet import (load_trained_model, get_model_data, get_sub_ensemble_predictions,
                                load_datasplit, get_target, get_classes, is_binary_classification,
                                crop_model_name)

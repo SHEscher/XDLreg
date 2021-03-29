@@ -6,7 +6,7 @@ Adaptation from apply_heatmap.py by Sebastian L. & Leander Weber (FH HHI)
 # import os
 # sys.path.append((os.path.abspath(".").split("DeepAge")[0] + "DeepAge/Analysis/Modelling/MRInet/"))
 
-from meta_functions import *
+from utils import *
 import numpy as np
 from matplotlib import cm
 from imageio import imwrite as imsave

@@ -1,9 +1,7 @@
-# !/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Meta functions
+Utilities for XDLreg
 
-Author: Simon M. Hofmann | <[firstname].[lastname][at]cbs.mpg.de> | 2018-2019
+Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 """
 
 # %% Imports
@@ -28,7 +26,7 @@ import psutil
 # %% Paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
 def setwd(new_dir):
-    _root_path = "DeepAge"
+    _root_path = "XDLreg"
 
     assert _root_path in os.getcwd(), \
         f'Current working dir "{os.getcwd()}" is outside of project "{_root_path}".'
@@ -56,9 +54,6 @@ def setwd(new_dir):
             cprint(f"New working dir:\t{os.getcwd()}\n", 'y')
         else:
             cprint(f"Given folder not found. Working dir remains:\t{os.getcwd()}\n", 'r')
-
-    # else:
-    #     print("Already in correct working dir")
 
 
 class DisplayablePath(object):
@@ -1057,61 +1052,18 @@ def end():
     cprint("\n" + "*<o>*" * 9 + "  END  " + "*<o>*" * 9 + "\n", col='p', fm='bo')
 
 
-# %% >> >> DEBUG PACKAGE >>> >>> ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
-
-# Needs to be manually executed in console in order to work for __main__ script.
-def set_defaults_for(fct):
-    """
-    set_defaults_for() comes handy, when the given function has a long list of kwargs
-     and needs to be debugged.
-
-    set_defaults_for() nust be manually compiled in console in order to work outside of the
-    meta_functions module.
-
-    set_defaults_for() writes default values of given function in globals().
-    Function arguments, which have no default value, have to be set manually.
-
-    Alternatively:
-    The following version would only work for a function, which has default values for all its arguments:
-     locals().update(inspect.getcallargs(get_life_data))  # feed default values of funct in locals()
-    """
-
-    import inspect
-
-    params = dict(inspect.signature(fct).parameters)
-
-    params_without_default = []
-    for param in list(params.keys()):
-        if params[param].default is inspect._empty:
-            params_without_default.append(param)
-            del params[param]
-
-    params_with_default = dict([(arg.name, arg.default) for arg in params.values()])
-
-    if len(params_without_default) > 0:
-        print("Manually set the following arguments without default value:", *params_without_default,
-              sep="\n\t")
-
-    globals().update(params_with_default)  # locals().update()  # only works outside of function
-
-
-# # Place following snippet into code. Code will run to this point, then one can explore variables form
-# there with ipython and after exit() the code continues
-# from IPython import embed; embed()
-
-# # After (long) script execution in ipython, use '%debug' to explore all variables before bug happened
-# %debug
-# <<< <<< DEBUG PACKAGE << <<
 
 # %% Config project paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-root_path = "/DeepAge/"
-sys.path.append(os.getcwd())
+root_path = "/XDLreg"
+if os.getcwd() not in sys.path:
+    sys.path.append(os.getcwd())
 root_path = list(filter(lambda x: root_path in x, sys.path))[0].split(root_path)[0] + root_path
-for subfold in ["MRInet", "LRP"]:
-    if os.path.join(root_path, 'Analysis/Modelling', subfold) not in sys.path:
-        sys.path.append(os.path.join(root_path, 'Analysis/Modelling', subfold))
 
-setwd("MRInet")
+# for subfold in ["PumpkinNet", "LRP"]:
+#     if os.path.join(root_path, subfold) not in sys.path:
+#         sys.path.append(os.path.join(root_path, subfold))
+
+# setwd("PumpkinNet")
 
 # <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END

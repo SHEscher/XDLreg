@@ -17,7 +17,7 @@ import nibabel as nb
 import ants
 from scipy import ndimage
 
-from meta_functions import cprint, chop_microseconds, np, os
+from utils import cprint, chop_microseconds, np, os
 from prune_image import find_edges  # TODO integrate prune here !!
 # import nibabel as nb  # Read/write access to some common neuroimaging file formats
 # from nilearn import image
