@@ -4,7 +4,7 @@
 
 *Simulation study on explainable deep learning (XDL) for regression tasks.*
 
-![PumpkinNet](Pumpkin.jpg =100x)
+<img src="Pumpkin.jpg" alt="PumpkinNet" width="350">
 
 ## PumpkinNet
 In `./PumpkinNet/` is the implementation of 2D-convolutional neural networks (CNN) model for the prediction of *age* from 2D simulated images (*Pumpkins*).  
