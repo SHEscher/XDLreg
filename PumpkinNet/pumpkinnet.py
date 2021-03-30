@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from utils import cprint, p2results, browse_files
+from utils import cprint, p2results, browse_files, function_timed
 from PumpkinNet.simulation_data import split_simulation_data
 
 
@@ -109,10 +109,10 @@ def is_binary_classification(model_name):
 # %% Plotting << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><
 
 def plot_training_process(_model):
-    history_file = f"{p2results}/model/{_model.name}_history.npy"
+    history_file = f"{p2models}/{_model.name}/{_model.name}_history.npy"
     if os.path.isfile(history_file) and not os.path.isfile(history_file.replace(".npy", ".png")):
         _binary_cls = is_binary_classification(_model.name)
-        model_history = np.load(f"{p2results}/model/{_model.name}_history.npy", allow_pickle=True).item()
+        model_history = np.load(f"{p2models}/{_model.name}/{_model.name}_history.npy", allow_pickle=True).item()
         fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(14, 6))
         fig.suptitle(f"{_model.name}")
         ax1.plot(model_history['acc' if _binary_cls else 'mean_absolute_error'])
@@ -206,14 +206,12 @@ def plot_prediction(_model, xdata, ydata):
                           figsize=(10, 8))
         _ax2 = _fig.add_subplot(1, 1, 1)
         _ax2.set_title(f"Residuals w.r.t. {_target.upper()} (MAE={mae:.2f})")
-        rg_ = sns.regplot(x=ydata, y=m_pred[:, 0] - ydata)
-        # sns.lmplot(x="true-y", y="pred_diff", data=mri_tab, order=5)  # poly-fit
+        rg_ = sns.regplot(x=ydata, y=m_pred[:, 0] - ydata, order=3)
         plt.hlines(y=0, xmin=min(ydata) - 3, xmax=max(ydata) + 3, linestyles="dashed", alpha=.5)
         plt.vlines(x=np.median(ydata), ymin=min(m_pred[:, 0] - ydata) - 2,
                    ymax=max(m_pred[:, 0] - ydata) + 2,
                    linestyles="dotted", color="red", alpha=.5, label="median test set")
         _ax2.legend()
-
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
         plt.xlabel(f"True-{_target.upper()}", fontsize=20)
@@ -226,6 +224,7 @@ def plot_prediction(_model, xdata, ydata):
 
 # %% Train model << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
+@function_timed
 def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
     # Prep data for model
     xdata, ydata = pumpkin_set.data2numpy(for_keras=True)
@@ -243,13 +242,13 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
     # # Save model progress (callbacks)
     # See also: https://www.tensorflow.org/tutorials/keras/save_and_load
     callbacks = [keras.callbacks.ModelCheckpoint(
-        filepath=f"{p2results}/model/{model.name}" + "_{epoch}.h5",
+        filepath=f"{p2models}/{model.name}/{model.name}" + "_{epoch}.h5",
         save_best_only=True,
         save_weights_only=False,
         period=10,
         monitor="val_loss",
         verbose=1),
-        keras.callbacks.TensorBoard(log_dir=f"{p2results}/model/{model.name}/")]
+        keras.callbacks.TensorBoard(log_dir=f"{p2models}/{model.name}/")]
     # , keras.callbacks.EarlyStopping()]
 
     # # Train the model
@@ -262,11 +261,11 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
                         validation_data=(x_val, y_val))
 
     # Save final model (weights+architecture)
-    model.save(filepath=f"{p2results}/model/{model.name}/{model.name}_final.h5")  # HDF5 file
+    model.save(filepath=f"{p2models}/{model.name}/{model.name}_final.h5")  # HDF5 file
 
     # Report training metrics
     # print('\nhistory dict:', history.history)
-    np.save(file=f"{p2results}/model/{model.name}/{model.name}_history", arr=history.history)
+    np.save(file=f"{p2models}/{model.name}/{model.name}_history", arr=history.history)
 
     # # Evaluate the model on the test data
     cprint(f'\nEvaluate {model.name} on test data ...', 'b')

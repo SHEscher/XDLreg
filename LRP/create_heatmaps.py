@@ -73,7 +73,7 @@ def create_relevance_dict(model_name, subset="test", analyzer_type="lrp.sequenti
 
 def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
                              analyzer_type="lrp.sequential_preset_a", pointers=True, cbar=False,
-                             true_scale=False):
+                             true_scale=False, fm="pdf"):
 
     # Get model
     _model = load_trained_model(model_name)
@@ -103,8 +103,8 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
         a = rel_obj[sub]
         # plt.imshow(a)
 
-        col_a = apply_colormap(R=a, inputimage=img.squeeze(), cmapname='black-firered',
-                               cintensifier=5., gamma=.2, true_scale=true_scale)
+        col_a = apply_colormap(R=a, inputimage=img.squeeze(), cintensifier=5., gamma=.2,
+                               true_scale=true_scale)
 
         sub_y = ydata[sub]
         sub_yt = _model.predict(img).item()
@@ -121,13 +121,12 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
                 cbar_range[0], cbar_range[1], len(caxbar.get_ticks()))])
 
         plt.tight_layout()
-        plt.show()
 
-        for fm in ["png", "pdf"]:
-            parent_dir = os.path.join(p2relevance, _model.name, "plots")
-            if not os.path.exists(parent_dir):
-                os.makedirs(parent_dir)
-            plt.savefig(os.path.join(parent_dir, f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}.{fm}"))
+        # Save plots
+        parent_dir = os.path.join(p2relevance, _model.name, "plots")
+        if not os.path.exists(parent_dir):
+            os.makedirs(parent_dir)
+        plt.savefig(os.path.join(parent_dir, f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}.{fm}"))
 
         if pointers:
             phead = pdata.data[didx[0]+sub]
@@ -142,14 +141,14 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
             # Arrows to lesions
             for coord in phead.lesion_coords:
                 # Shadow
-                plt.annotate(s='', xy=coord[::-1],
+                plt.annotate(text='', xy=coord[::-1],
                              # xytext=(coord[::-1] + cntr)//2,  # arrows come from center
                              xytext=np.array(coord[::-1]) + [-4.6, 5.4],
                              arrowprops=dict(arrowstyle='simple', color="black",
                                              alpha=.5))
 
                 # Arrow
-                plt.annotate(s='', xy=coord[::-1],
+                plt.annotate(text='', xy=coord[::-1],
                              # xytext=(coord[::-1] + cntr)//2,  # arrows come from center
                              xytext=np.array(coord[::-1]) + [-5, 5],
                              arrowprops=dict(arrowstyle='simple', color="#E3E7E3",  # "lightgreen"
@@ -157,12 +156,12 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
 
             plt.tight_layout()
 
-            for fm in ["png", "pdf"]:
-                parent_dir = os.path.join(p2relevance, _model.name, "plots")
-                if not os.path.exists(parent_dir):
-                    os.makedirs(parent_dir)
-                plt.savefig(os.path.join(parent_dir,
-                                         f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}_pointer.{fm}"))
+            # Save plots
+            parent_dir = os.path.join(p2relevance, _model.name, "plots")
+            if not os.path.exists(parent_dir):
+                os.makedirs(parent_dir)
+            plt.savefig(os.path.join(parent_dir,
+                                     f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}_pointer.{fm}"))
         plt.close()
 
 # <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END

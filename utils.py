@@ -9,14 +9,13 @@ import sys
 import os
 import pickle
 import platform
-import subprocess  # i.a. execute shell commands from python
+import subprocess
 from datetime import datetime, timedelta
 from functools import wraps
 from math import floor, log
 from pathlib import Path
 import gzip
 import numpy as np
-import psutil
 
 
 # %% OS & Paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
@@ -576,7 +575,6 @@ def ask_true_false(question, col="b"):
 
 # %% Save objects externally & load them << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-@function_timed
 def save_obj(obj, name, folder='./TEMP/', hp=True, as_zip=False):
 
     # Remove suffix here, if there is e.g. "*.gz.pkl":
@@ -603,7 +601,6 @@ def save_obj(obj, name, folder='./TEMP/', hp=True, as_zip=False):
             p.dump(obj)
 
 
-@function_timed
 def load_obj(name, folder='./TEMP/'):
 
     if not (name.endswith(".pkl") or name.endswith(".pkl.gz")):
