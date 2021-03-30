@@ -17,10 +17,10 @@ from LRP.create_heatmaps import create_relevance_dict, plot_simulation_heatmaps,
 
 def run_simulation(n_samples=2000, uniform=True, age_bias=None, epochs=80, plot_n_heatmaps=20):
 
-    cprint(f"\nRun simulation on {n_samples} samples:\n", col="b", fm="bo")
+    cprint(f"Run simulation on {n_samples} samples:\n", col="b", fm="bo")
 
     # Create data and train model
-    cprint(f"\nTrain PumpkinNet:\n", col="b", fm="bo")
+    cprint(f"Train PumpkinNet:\n", col="b", fm="bo")
     model_name = train_simulation_model(pumpkin_set=get_pumpkin_set(n_samples=n_samples, uniform=uniform,
                                                                     age_bias=age_bias), epochs=epochs)
 
