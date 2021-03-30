@@ -26,6 +26,7 @@ min_age = 20  # OR, e.g., min_age=4 for developmental factors (here: size of hea
 # Set paths
 p2data = os.path.join(root_path, "Data")
 
+
 # %% Create image data ("Pumpkins") << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
 
 def make_pumpkin(age, img_size=(98, 98)):
@@ -197,7 +198,6 @@ class PumpkinHead:
 # # TODO 3D images
 # For instance, use MNI template, and binarize it then apply some 'age'-related changes (e.g. lesions)"""
 
-
 # %% Create dataset << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
 class PumpkinSet:
@@ -346,3 +346,5 @@ def split_simulation_data(xdata, ydata, return_idx=False, only_test=False):
         return x_test, y_test
     else:
         return x_train, x_val, x_test, y_train, y_val, y_test
+
+# << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< END

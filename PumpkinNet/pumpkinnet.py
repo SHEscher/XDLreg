@@ -12,8 +12,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from utils import cprint, p2results
+from utils import cprint, p2results, browse_files
 from PumpkinNet.simulation_data import split_simulation_data
+
+
+# %% Global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
+p2models = os.path.join(p2results, "model")
 
 
 # %% ConvNet << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
@@ -164,7 +168,7 @@ def plot_prediction(_model, xdata, ydata):
                           annot_kws={"size": 16})  # "ha": 'center', "va": 'center'})
         _ax.set_ylim([0, 2])  # labelling is off otherwise, OR downgrade to matplotlib==3.1.0
 
-        plot_path = os.path.join(p2results, "model", _model.name,
+        plot_path = os.path.join(p2models, _model.name,
                                  f"{_model.name}_confusion-matrix_(acc={accuracy:.2f}).png")
         _fig.savefig(plot_path)
         plt.close()
@@ -175,7 +179,7 @@ def plot_prediction(_model, xdata, ydata):
         mae = np.absolute(ydata - m_pred[:, 0]).mean()
 
         # # Jointplot
-        plot_path = os.path.join(p2results, "model", _model.name,
+        plot_path = os.path.join(p2models, _model.name,
                                  f"{_model.name}_predictions_MAE={mae:.2f}.png")
 
         sns.jointplot(x=m_pred[:, 0], y=ydata, kind="reg", height=10,
@@ -195,7 +199,7 @@ def plot_prediction(_model, xdata, ydata):
         plt.close()
 
         # # Residuals
-        plot_path = os.path.join(p2results, "model", _model.name,
+        plot_path = os.path.join(p2models, _model.name,
                                  f"{_model.name}_residuals_MAE={mae:.2f}.png")
 
         _fig = plt.figure(f"{_target.title()} Prediction Model Residuals MAE={mae:.2f}",
@@ -233,8 +237,8 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
     model = create_simulation_model(name=_model_name, target_bias=np.mean(ydata))
 
     # Create folders
-    if not os.path.exists(os.path.join(p2results, "model", model.name)):
-        os.makedirs(os.path.join(p2results, "model", model.name))
+    if not os.path.exists(os.path.join(p2models, model.name)):
+        os.makedirs(os.path.join(p2models, model.name))
 
     # # Save model progress (callbacks)
     # See also: https://www.tensorflow.org/tutorials/keras/save_and_load
@@ -276,8 +280,6 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
     return model.name
 
 
-# %% MISC << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
-
 def crop_model_name(model_name):
     if model_name.endswith(".h5"):
         model_name = model_name[0:-len(".h5")]
@@ -286,3 +288,27 @@ def crop_model_name(model_name):
         model_name = model_name[0:-len("_final")]
 
     return model_name
+
+
+def load_trained_model(model_name=None):
+    if model_name:
+        if os.path.isdir(os.path.join(p2models, crop_model_name(model_name))):
+            # Load & return ensemble model
+            # Load single model
+            # e.g., 2020-01-13_14-05_MRIkerasNetAGE_MNI_BinClassi_final.h5
+            if ".h5" not in model_name:
+                if "_final" not in model_name:
+                    model_name += "_final.h5"
+            return keras.models.load_model(os.path.join(p2models,
+                                                        crop_model_name(model_name),
+                                                        model_name))
+        else:
+            cprint(f"No model directory found for given model '{model_name}'", col='r')
+
+    else:
+        path2model = browse_files(p2models, "H5")
+        _model_name = path2model.split("/")[-1]
+
+        return load_trained_model(model_name=_model_name)
+
+# <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END

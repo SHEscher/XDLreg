@@ -1,80 +1,19 @@
 """
-Adaptation from apply_heatmap.py by Sebastian L. & Leander Weber (FH HHI)
+Different colormaps for heatmap plots.
+
+Adaptation from apply_heatmap.py by Sebastian L. & Leander Weber (FH HHI, Berlin)
+
+Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 """
 # %% Import
-# import sys
-# import os
-# sys.path.append((os.path.abspath(".").split("DeepAge")[0] + "DeepAge/Analysis/Modelling/MRInet/"))
-
-from utils import *
+from matplotlib.colors import LinearSegmentedColormap
+from utils import cprint, normalize
 import numpy as np
-from matplotlib import cm
-from imageio import imwrite as imsave
-# import cv2
 
 
-# %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
-
-def produce_supported_maps():
-    # return a list of names and extreme color values.
-    print(*(list(custom_maps.keys()) + matplotlib_maps), sep="\n")
-    return list(custom_maps.keys()) + matplotlib_maps
-
-
-def colorize_matplotlib(R, cmapname):
-    # fetch color mapping function by string
-    cmap = cm.__dict__[cmapname]
-
-    # bring data to [-1 1]
-    R = R / np.max(np.abs(R))
-
-    # push data to [0 1] to avoid automatic color map normalization
-    R = (R + 1) / 2
-
-    sh = R.shape
-
-    return cmap(R.flatten())[:, 0:3].reshape([*sh, 3])
-
-
-# %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
-# Functions to create colored heatmap
-
-def gregoire_gray_red(R):
-    basegray = 0.8  # floating point gray
-
-    maxabs = np.max(R)
-    RGB = np.ones([*R.shape, 3]) * basegray  # uniform gray image.
-
-    tvals = np.maximum(np.minimum(R / maxabs, 1.0), -1.0)
-    negatives = R < 0
-
-    RGB[negatives, 0] += tvals[negatives] * basegray
-    RGB[negatives, 1] += tvals[negatives] * basegray
-    RGB[negatives, 2] += -tvals[negatives] * (1 - basegray)
-
-    positives = R >= 0
-    RGB[positives, 0] += tvals[positives] * (1 - basegray)
-    RGB[positives, 1] += -tvals[positives] * basegray
-    RGB[positives, 2] += -tvals[positives] * basegray
-
-    return RGB
-
-
-def gregoire_black_green(R):
-    maxabs = np.max(R)
-    RGB = np.zeros([*R.shape, 3])
-
-    negatives = R < 0
-    RGB[negatives, 2] = -R[negatives] / maxabs
-
-    positives = R >= 0
-    RGB[positives, 1] = R[positives] / maxabs
-
-    return RGB
-
+# %% Create colored heatmap ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
 
 def gregoire_black_firered(R):
-    # normalize to [-1, 1] for Real numbers, or [0, 1] for R+, where zero remains zero:
     R /= np.max(np.abs(R))
     x = R
 
@@ -89,45 +28,6 @@ def gregoire_black_firered(R):
     return np.concatenate([(hrp + hrn)[..., None],
                            (hgp + hgn)[..., None],
                            (hbp + hbn)[..., None]], axis=x.ndim)
-
-
-def gregoire_gray_red2(R):
-    v = np.var(R)
-    R[R > 10 * v] = 0
-    R[R < 0] = 0
-    R = R / np.max(R)
-    # (this is copypasta)
-    x = R
-
-    # positive relevance
-    hrp = 0.9 - np.clip(x - 0.3, 0, 0.7) / 0.7 * 0.5
-    hgp = 0.9 - np.clip(x - 0.0, 0, 0.3) / 0.3 * 0.5 - np.clip(x - 0.3, 0, 0.7) / 0.7 * 0.4
-    hbp = 0.9 - np.clip(x - 0.0, 0, 0.3) / 0.3 * 0.5 - np.clip(x - 0.3, 0, 0.7) / 0.7 * 0.4
-
-    # negative relevance
-    hrn = 0.9 - np.clip(-x - 0.0, 0, 0.3) / 0.3 * 0.5 - np.clip(-x - 0.3, 0, 0.7) / 0.7 * 0.4
-    hgn = 0.9 - np.clip(-x - 0.0, 0, 0.3) / 0.3 * 0.5 - np.clip(-x - 0.3, 0, 0.7) / 0.7 * 0.4
-    hbn = 0.9 - np.clip(-x - 0.3, 0, 0.7) / 0.7 * 0.5
-
-    hr = hrp * (x >= 0) + hrn * (x < 0)
-    hg = hgp * (x >= 0) + hgn * (x < 0)
-    hb = hbp * (x >= 0) + hbn * (x < 0)
-
-    return np.concatenate([hr[..., None], hg[..., None], hb[..., None]], axis=R.ndim)
-
-
-def alex_black_yellow(R):
-    maxabs = np.max(R)
-    RGB = np.zeros([*R.shape, 3])
-
-    negatives = R < 0
-    RGB[negatives, 2] = -R[negatives] / maxabs
-
-    positives = R >= 0
-    RGB[positives, 0] = R[positives] / maxabs
-    RGB[positives, 1] = R[positives] / maxabs
-
-    return RGB
 
 
 def create_cmap(color_fct, res=4999):
@@ -163,7 +63,6 @@ def create_cmap(color_fct, res=4999):
         ]
     }
     """
-    from matplotlib.colors import LinearSegmentedColormap
 
     # Prep resolution (res):
     assert float(res).is_integer(), "'res' must be a positive natural number."
@@ -191,19 +90,6 @@ def create_cmap(color_fct, res=4999):
 
     return _cmap
 
-
-# %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
-# List of supported color map names (the maps need to be implemented above this line)
-custom_maps = {'gray-red': gregoire_gray_red,
-               'gray-red2': gregoire_gray_red2,
-               'black-green': gregoire_black_green,
-               'black-firered': gregoire_black_firered,
-               'blue-black-yellow': alex_black_yellow}
-
-matplotlib_maps = ['afmhot', 'jet', 'seismic', 'bwr', "cool"]
-
-
-# %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
 def symmetric_clip(analyzer_obj, percentile=1-1e-2, min_sym_clip=True):
     """
@@ -248,13 +134,12 @@ def symmetric_clip(analyzer_obj, percentile=1-1e-2, min_sym_clip=True):
         return analyzer_obj
 
 
-def apply_colormap(R, inputimage=None, cmapname='black-firered', cintensifier=1., clipq=1e-2,
+def apply_colormap(R, inputimage=None, cintensifier=1., clipq=1e-2,
                    min_sym_clip=False, gamma=0.2, gblur=0, true_scale=False):
     """
     Merge relevance tensor with input image to receive a heatmap over the input space.
     :param R: relevance map/tensor
     :param inputimage: input image
-    :param cmapname: name of color-map (cmap) to be applied
     :param cintensifier: [1, ...[ increases the color strength by multiplying + clipping [DEPRECATED]
     :param clipq: clips off given percentile of relevance symmetrically around zero. range: [0, .5]
     :param min_sym_clip: True: finds the min(abs(R.min), R.max) to clip symmetrically around zero
@@ -287,13 +172,7 @@ def apply_colormap(R, inputimage=None, cmapname='black-firered', cintensifier=1.
     # norm to [-1, 1] for real numbers, or [0, 1] for R+, where zero remains zero
 
     # # Apply chosen cmap
-    if cmapname in custom_maps:
-        r_rgb = custom_maps[cmapname](_R)
-    elif cmapname in matplotlib_maps:
-        r_rgb = colorize_matplotlib(_R, cmapname)
-    else:
-        raise Exception(f'You have managed to smuggle in the unsupported colormap {cmapname} into method '
-                        f'apply_colormap. Supported mappings are:\n\t{produce_supported_maps()}')
+    r_rgb = gregoire_black_firered(_R)
 
     # Increase col-intensity
     if cintensifier != 1.:
@@ -316,13 +195,4 @@ def apply_colormap(R, inputimage=None, cmapname='black-firered', cintensifier=1.
     else:
         return heat_img, r_rgb
 
-
-# %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
-def write_heatmap_image(rgb, outputpath):
-    # RGB (from apply_colormap()) is still filled with floating point values.
-    # convert, then save.
-    rgb *= 255.
-    rgb = rgb.astype(np.uint8)
-    imsave(outputpath, rgb)
-
-# %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o  END
+# <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END

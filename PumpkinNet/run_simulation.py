@@ -12,7 +12,7 @@ import seaborn as sns
 import keras
 
 from utils import p2results, cprint, find
-from PumpkinNet.pumpkinnet import crop_model_name
+from PumpkinNet.pumpkinnet import crop_model_name, load_trained_model
 from PumpkinNet.simulation_data import get_pumpkin_set, split_simulation_data
 from LRP.create_heatmaps import create_relevance_dict, plot_simulation_heatmaps
 
@@ -37,7 +37,7 @@ from LRP.create_heatmaps import create_relevance_dict, plot_simulation_heatmaps
 
         # TODO continue here
         # # Check sum relevance depending on model prdiction
-        # model = keras.models.load_model(os.path.join(p2results, fn))
+        # model = load_trained_model(model_name=fn)
         #
         # pdata = get_pumpkin_set(n_samples=2000, uniform="non-uni" not in model_name)
         # x, y = pdata.data2numpy(for_keras=True)
@@ -69,4 +69,4 @@ from LRP.create_heatmaps import create_relevance_dict, plot_simulation_heatmaps
         # # plt.show()
         # plt.close()
 
-# %% ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o  END
+# <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END
