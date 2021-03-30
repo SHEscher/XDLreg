@@ -309,7 +309,7 @@ class PumpkinSet:
 
 def get_pumpkin_set(n_samples=2000, uniform=True, age_bias=None):
 
-    df_files = os.listdir(p2data) if os.listdir(p2data) else []
+    df_files = os.listdir(p2data) if os.path.exists(p2data) else []
     for file in df_files:
         if f"N-{n_samples}" in file and f"{'_' if uniform else 'non-'}uniform" in file:
             cprint(f"Found & load following file: {file} ...", 'b')

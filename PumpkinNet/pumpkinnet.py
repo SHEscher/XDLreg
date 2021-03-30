@@ -9,11 +9,14 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 import os
 import keras
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from utils import cprint, p2results
 from PumpkinNet.simulation_data import split_simulation_data
 
 
-# %% ConvNet ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><
+# %% ConvNet << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
 def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98, 98), batch_norm=False,
                             class_task=False):
@@ -25,9 +28,10 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
     if target_bias is not None:
         cprint(f"\nGiven target bias is {target_bias:.3f}\n", "y")
 
-    actfct = "relu"
-
+    name += "CL" if class_task else ""
     kmodel = keras.Sequential(name=name)  # OR: Sequential([keras.layer.Conv2d(....), layer...])
+
+    actfct = "relu"
 
     # 3D-Conv
     if batch_norm:
@@ -94,6 +98,152 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
     return kmodel
 
 
+def is_binary_classification(model_name):
+    return "CL" in model_name
+
+
+# %% Plotting << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><
+
+def plot_training_process(_model):
+    history_file = f"{p2results}/model/{_model.name}_history.npy"
+    if os.path.isfile(history_file) and not os.path.isfile(history_file.replace(".npy", ".png")):
+        _binary_cls = is_binary_classification(_model.name)
+        model_history = np.load(f"{p2results}/model/{_model.name}_history.npy", allow_pickle=True).item()
+        fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(14, 6))
+        fig.suptitle(f"{_model.name}")
+        ax1.plot(model_history['acc' if _binary_cls else 'mean_absolute_error'])
+        ax1.plot(model_history['val_acc' if _binary_cls else 'val_mean_absolute_error'])
+        ax1.set_title('Performance')
+        ax1.set_ylabel('accuracy' if _binary_cls else 'mean absolute error')
+        ax1.set_xlabel('training epoch')
+        ax1.legend(['train', 'test'], loc='upper left')
+        # summarize history for loss
+        ax2.plot(model_history['loss'])
+        ax2.plot(model_history['val_loss'])
+        ax2.set_title('Loss')
+        ax2.set_ylabel('loss')
+        ax2.set_xlabel('training epoch')
+        ax2.legend(['train', 'test'], loc='upper left')
+        plt.tight_layout()
+        fig.savefig(history_file.replace(".npy", ".png"))
+        plt.close()
+
+
+def plot_prediction(_model, xdata, ydata, predictions=None):
+
+    _target = "age"
+
+    # # Calculate model-performance
+    if is_binary_classification(_model.name):
+
+        from sklearn.metrics import classification_report, confusion_matrix
+        import pandas as pd
+
+        # # Get model predictions
+        m_pred = _model.predict(x=xdata) if predictions is None else predictions  # takes a while
+        correct = (np.argmax(m_pred, axis=1) == np.argmax(ydata, axis=1)) * 1
+        accuracy = sum(correct) / len(correct)
+        # accuracy = _model.evaluate(xdata, ydata, batch_size=1)[1]  # , verbose=2)
+        # cprint(f'test acc: {accuracy:.3f}', 'y')
+
+        # # Save individ predics (added: 'true-y' == [_target'_categ'] to doublecheck [can be del])
+        pred_per_sic = pd.DataFrame(data=list(zip(pd.Categorical.from_codes(
+            np.argmax(m_pred, axis=1),
+            categories=_classes),
+            pd.Categorical.from_codes(np.argmax(ydata, axis=1), categories=_classes))),
+            index=sics_split["test"], columns=["pred", "true-y"])
+        pred_per_sic.index.name = "SICs"
+
+        # Adapt table
+        mri_tab = mri_tab[mri_tab.index.isin(pred_per_sic.index)]  # rm SICs not in test-set
+        mri_tab[f"{_target}_categ"] = pd.cut(mri_tab[_target],
+                                             bins=[0, 29.131 if _target == "bmi" else 60, 99],
+                                             labels=_classes)
+        mri_tab = mri_tab.join(pred_per_sic, how="outer")  # merge tables
+        mri_tab["pred_correct"] = mri_tab["pred"] == mri_tab["true-y"]
+
+        # # Classification report
+        y_true = np.argmax(ydata, axis=1)
+        y_pred = np.argmax(m_pred, axis=1)
+        cprint(classification_report(y_true, y_pred, target_names=_classes), 'y')
+        # Precision: tp/(tp+fp); tp: n_true-positives & fp: n_false-positives
+        # Precision is (intuitively): ability of model not to label a sample as pos that is neg
+        # Recall (=sensitivity): tp/(tp+fn); fn: n_false-negatives.
+        # Recall is (intuitively) the ability of the classifier to find all the positive samples.
+        # See also: Specificity (true negative-rate: tn/(tn+fp)) and others ...
+
+        # Create confusion matrix
+        confmat = confusion_matrix(y_true, y_pred, normalize='true')  # normalize=None
+
+        # # Plot confusion matrix
+        df_confmat = pd.DataFrame(data=confmat, columns=_classes, index=_classes)
+        df_confmat.index.name = 'TrueValues'
+        df_confmat.columns.name = f'Predicted {_target.upper()}'
+        _fig = plt.figure(figsize=(10, 7))
+        sns.set(font_scale=1.4)  # for label size
+        _ax = sns.heatmap(df_confmat, cmap="Blues", annot=True,
+                          annot_kws={"size": 16})  # "ha": 'center', "va": 'center'})
+        _ax.set_ylim([0, 2])  # because labelling is off otherwise, OR downgrade matplotlib==3.1.0
+        _fig.savefig(p2pred + f"{_model.name}_confusion-matrix.png")
+        plt.close()
+        # cprint(f"Confusion Matrix:\n{confusion_matrix(y_true, y_pred, normalize='true')}", 'b')
+
+    else:
+        # # Get model predictions
+        m_pred = _model.predict(x=xdata) if predictions is None else predictions  # takes a while
+
+        mae = np.absolute(ydata - m_pred[:, 0]).mean()
+
+        # # Save individual predics (we add 'true-y' == ['_target'] to double check [could be del])
+
+        # # Jointplot
+        plot_path = os.path.join(p2results, "model", _model.name,
+                                 f"{_model.name}_predictions_MAE={mae:.2f}.png")
+
+        sns.jointplot(x=m_pred[:, 0], y=ydata, kind="reg", height=10,
+                      marginal_kws=dict(bins=int(round((ydata.max() - ydata.min()) / 3))),
+                      xlim=(np.min(m_pred) - 10, np.max(m_pred) + 10),
+                      ylim=(np.min(ydata) - 10, np.max(ydata) + 10)).plot_joint(
+            sns.kdeplot, zorder=0, n_levels=6).set_axis_labels("Predictions",
+                                                               f"True-{_target.upper()}")
+
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xlabel(f"Predicted {_target.lower()}", fontsize=20)
+        plt.ylabel(f"Chronological {_target.lower()}", fontsize=20)
+
+        plt.tight_layout()
+        plt.savefig(plot_path)  # Save plot
+        plt.close()
+
+        # # Residuals
+        plot_path = os.path.join(p2results, "model", _model.name,
+                                 f"{_model.name}_residuals_MAE={mae:.2f}.png")
+
+        _fig = plt.figure(f"{_target.title()} Prediction Model Residuals MAE={mae:.2f}",
+                          figsize=(10, 8))
+        _ax2 = _fig.add_subplot(1, 1, 1)
+        _ax2.set_title(f"Residuals w.r.t. {_target.upper()} (MAE={mae:.2f})")
+        rg_ = sns.regplot(x=ydata, y=m_pred[:, 0] - ydata)
+        # sns.lmplot(x="true-y", y="pred_diff", data=mri_tab, order=5)  # poly-fit
+        plt.hlines(y=0, xmin=min(ydata) - 3, xmax=max(ydata) + 3, linestyles="dashed", alpha=.5)
+        plt.vlines(x=np.median(ydata), ymin=min(m_pred[:, 0] - ydata) - 2,
+                   ymax=max(m_pred[:, 0] - ydata) + 2,
+                   linestyles="dotted", color="red", alpha=.5, label="median test set")
+        _ax2.legend()
+
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xlabel(f"True-{_target.upper()}", fontsize=20)
+        plt.ylabel(f"Prediction Error (pred-t)", fontsize=20)
+
+        plt.tight_layout()
+        _fig.savefig(plot_path)
+        plt.close()
+
+
+# %% Train model << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
+
 def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
     # Prep data for model
     xdata, ydata = pumpkin_set.data2numpy(for_keras=True)
@@ -130,19 +280,24 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
                         validation_data=(x_val, y_val))
 
     # Save final model (weights+architecture)
-    model.save(filepath=f"{p2results}/model/{model.name}_final.h5")  # HDF5 file
+    model.save(filepath=f"{p2results}/model/{model.name}/{model.name}_final.h5")  # HDF5 file
 
     # Report training metrics
     # print('\nhistory dict:', history.history)
-    np.save(file=f"{p2results}/model/{model.name}_history", arr=history.history)
+    np.save(file=f"{p2results}/model/{model.name}/{model.name}_history", arr=history.history)
 
     # # Evaluate the model on the test data
     cprint(f'\nEvaluate {model.name} on test data ...', 'b')
     performs = model.evaluate(x_test, y_test, batch_size=1)  # , verbose=2)
     cprint(f'test loss, test performance: {performs}', 'y')
 
+    # Figure for training process
+    plot_training_process(_model=model)
+
     return model.name
 
+
+# %% MISC << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
 def crop_model_name(model_name):
     if model_name.endswith(".h5"):

@@ -47,41 +47,9 @@ def analyze_model(mri, analyzer_type, model_, norm, neuron_selection=None):
     return a
 
 
-def non_zero_analyzer_and_clim(sub_nr, a, t, t_y, analy_type, save_folder):
-    bincnt = np.histogram(a.flatten(), 100)
+def plot_heatmap(sub_nr, t, t_y, ipt, analyzer_obj, analyzer_type, fn_suffix="", save_folder="",
+                 save_plot=True, **kwargs):
 
-    a_no_zero = a[np.where(np.logical_or(bincnt[1][np.max([np.argmax(bincnt[0]) - 1, 0])] > a,
-                                         a > bincnt[1][np.argmax(bincnt[0]) + 1]))]  # flattened
-
-    clim = (
-        np.mean(a_no_zero) - np.std(a_no_zero) * 1.5, np.mean(a_no_zero) + np.std(a_no_zero) * 1.5)
-    # print(f"clim[0]: {clim[0]:.3f} | clim[1]: {clim[1]:.3f}\n")
-    # TODO calc glob distribution of relevance range
-
-    # clim = (np.percentile(a_no_zero, 5), np.percentile(a_no_zero, 95))
-
-    hist_fig = plt.figure(analy_type + " Hist", figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    bincnt_no_zero = plt.hist(a_no_zero, bins=100, log=False)
-    plt.vlines(x=clim[1], ymin=0, ymax=np.max(bincnt_no_zero[0]))
-    plt.vlines(x=clim[0], ymin=0, ymax=np.max(bincnt_no_zero[0]))
-    plt.title("Leave peak out Histogram")
-    plt.subplot(1, 2, 2)
-    _ = plt.hist(a.flatten(), bins=100, log=True)  # bincnt
-    plt.vlines(x=clim[1], ymin=0, ymax=np.max(bincnt_no_zero[0]))
-    plt.vlines(x=clim[0], ymin=0, ymax=np.max(bincnt_no_zero[0]))
-    plt.title("Full Histogram")
-    plt.tight_layout()
-
-    plt.savefig(f"{save_folder}{analy_type}_S{sub_nr}_groundtruth={t}_"
-                f"pred={t_y:{'.2f' if isinstance(t_y, float) else ''}}_heatmap_hist.png")
-    plt.close(hist_fig)
-
-    return clim
-
-
-def plot_heatmap(sub_nr, t, t_y, ipt, analyzer_obj, analyzer_type, fix_clim=None, fn_suffix="",
-                 save_folder="", save_plot=True, **kwargs):
     a = analyzer_obj.copy()
 
     save_folder = prep_save_folder(os.path.join("./processed/Keras/Interpretation/", save_folder))
