@@ -28,7 +28,7 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
     if target_bias is not None:
         cprint(f"\nGiven target bias is {target_bias:.3f}\n", "y")
 
-    name += "CL" if class_task else ""
+    name += "BiCL" if class_task else ""
     kmodel = keras.Sequential(name=name)  # OR: Sequential([keras.layer.Conv2d(....), layer...])
 
     actfct = "relu"
@@ -99,7 +99,7 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
 
 
 def is_binary_classification(model_name):
-    return "CL" in model_name
+    return "BiCL" in model_name
 
 
 # %% Plotting << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><
@@ -129,48 +129,27 @@ def plot_training_process(_model):
         plt.close()
 
 
-def plot_prediction(_model, xdata, ydata, predictions=None):
+def plot_prediction(_model, xdata, ydata):
 
     _target = "age"
 
     # # Calculate model-performance
-    if is_binary_classification(_model.name):
+    if is_binary_classification(_model.name):  # TODO consider multi-class case
 
         from sklearn.metrics import classification_report, confusion_matrix
         import pandas as pd
 
         # # Get model predictions
-        m_pred = _model.predict(x=xdata) if predictions is None else predictions  # takes a while
+        _classes = ["young", "old"]
+        m_pred = _model.predict(x=xdata)  # takes a while
         correct = (np.argmax(m_pred, axis=1) == np.argmax(ydata, axis=1)) * 1
         accuracy = sum(correct) / len(correct)
-        # accuracy = _model.evaluate(xdata, ydata, batch_size=1)[1]  # , verbose=2)
-        # cprint(f'test acc: {accuracy:.3f}', 'y')
-
-        # # Save individ predics (added: 'true-y' == [_target'_categ'] to doublecheck [can be del])
-        pred_per_sic = pd.DataFrame(data=list(zip(pd.Categorical.from_codes(
-            np.argmax(m_pred, axis=1),
-            categories=_classes),
-            pd.Categorical.from_codes(np.argmax(ydata, axis=1), categories=_classes))),
-            index=sics_split["test"], columns=["pred", "true-y"])
-        pred_per_sic.index.name = "SICs"
-
-        # Adapt table
-        mri_tab = mri_tab[mri_tab.index.isin(pred_per_sic.index)]  # rm SICs not in test-set
-        mri_tab[f"{_target}_categ"] = pd.cut(mri_tab[_target],
-                                             bins=[0, 29.131 if _target == "bmi" else 60, 99],
-                                             labels=_classes)
-        mri_tab = mri_tab.join(pred_per_sic, how="outer")  # merge tables
-        mri_tab["pred_correct"] = mri_tab["pred"] == mri_tab["true-y"]
 
         # # Classification report
         y_true = np.argmax(ydata, axis=1)
         y_pred = np.argmax(m_pred, axis=1)
         cprint(classification_report(y_true, y_pred, target_names=_classes), 'y')
-        # Precision: tp/(tp+fp); tp: n_true-positives & fp: n_false-positives
-        # Precision is (intuitively): ability of model not to label a sample as pos that is neg
-        # Recall (=sensitivity): tp/(tp+fn); fn: n_false-negatives.
-        # Recall is (intuitively) the ability of the classifier to find all the positive samples.
-        # See also: Specificity (true negative-rate: tn/(tn+fp)) and others ...
+        # Precision: tp/(tp+fp) | Recall (=sensitivity): tp/(tp+fn) | Specificity: tn/(tn+fp))
 
         # Create confusion matrix
         confmat = confusion_matrix(y_true, y_pred, normalize='true')  # normalize=None
@@ -183,18 +162,17 @@ def plot_prediction(_model, xdata, ydata, predictions=None):
         sns.set(font_scale=1.4)  # for label size
         _ax = sns.heatmap(df_confmat, cmap="Blues", annot=True,
                           annot_kws={"size": 16})  # "ha": 'center', "va": 'center'})
-        _ax.set_ylim([0, 2])  # because labelling is off otherwise, OR downgrade matplotlib==3.1.0
-        _fig.savefig(p2pred + f"{_model.name}_confusion-matrix.png")
+        _ax.set_ylim([0, 2])  # labelling is off otherwise, OR downgrade to matplotlib==3.1.0
+
+        plot_path = os.path.join(p2results, "model", _model.name,
+                                 f"{_model.name}_confusion-matrix_(acc={accuracy:.2f}).png")
+        _fig.savefig(plot_path)
         plt.close()
-        # cprint(f"Confusion Matrix:\n{confusion_matrix(y_true, y_pred, normalize='true')}", 'b')
 
     else:
         # # Get model predictions
-        m_pred = _model.predict(x=xdata) if predictions is None else predictions  # takes a while
-
+        m_pred = _model.predict(x=xdata) # takes a while
         mae = np.absolute(ydata - m_pred[:, 0]).mean()
-
-        # # Save individual predics (we add 'true-y' == ['_target'] to double check [could be del])
 
         # # Jointplot
         plot_path = os.path.join(p2results, "model", _model.name,
@@ -291,8 +269,9 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
     performs = model.evaluate(x_test, y_test, batch_size=1)  # , verbose=2)
     cprint(f'test loss, test performance: {performs}', 'y')
 
-    # Figure for training process
+    # Plots for training process & predictions on test set
     plot_training_process(_model=model)
+    plot_prediction(_model=model, xdata=x_test, ydata=y_test)
 
     return model.name
 

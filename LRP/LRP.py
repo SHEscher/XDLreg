@@ -19,6 +19,7 @@ from utils import cprint
 from PumpkinNet.visualize import prep_save_folder, plot_mid_slice
 from LRP.apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
 
+
 # %% << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
 def analyze_model(mri, analyzer_type, model_, norm, neuron_selection=None):
@@ -38,9 +39,6 @@ def analyze_model(mri, analyzer_type, model_, norm, neuron_selection=None):
     if norm:
         # Normalize to [-1, 1]
         a /= np.max(np.abs(a))
-
-        # TODO Try norm 0, 1
-        # a = normalize(a, 0, 1)
 
     # print(f"{analyzer_type} min: {np.min(a):.3f} | max: {np.max(a):.3f}\n")
 
@@ -89,81 +87,5 @@ def plot_heatmap(sub_nr, t, t_y, ipt, analyzer_obj, analyzer_type, fn_suffix="",
                    cmap=create_cmap(gregoire_black_firered), c_range="full",
                    cbar=True, cbar_range=cbar_range, edges=False,
                    save=save_plot, save_folder=save_folder, **kwargs)
-
-
-def apply_analyzer_and_plot_heatmap(subjects, mris, targets, pre_model, ls_analy_type, binary_cls,
-                                    fix_clim=None, ls_suptitles=None,
-                                    neuron_analysis=False, classes=None, save_folder=""):
-    # Check argument
-    if ls_suptitles:
-        assert len(ls_suptitles) == len(subjects), "'ls_suptitles' must have same length as subjects!"
-
-    # Prepare types of analysis
-    ls_analy_type = ls_analy_type if isinstance(ls_analy_type, list) else [ls_analy_type]
-    ls_analy_type = ls_analy_type if ls_analy_type[0] != "input" else ls_analy_type[1:]  # If, rm 'input'
-
-    # Prepare folder
-    fullp2save_folder = prep_save_folder(os.path.join("./processed/Keras/Interpretation/", save_folder))
-
-    # Run LRP through all given subjects
-    for subidx, sub_nr in enumerate(subjects):
-        suptitle = ls_suptitles[subidx] if ls_suptitles else None
-
-        # Check whether LRP was done already
-        sub_analyser = []  # list for subject specfic analyser
-        for an in ls_analy_type:
-            if not any([(an in fi and f"S{sub_nr}_" in fi) for fi in os.listdir(fullp2save_folder)]):
-                sub_analyser.append(an)  # only apply analyser type which haven't been used before
-        if len(sub_analyser) == 0:
-            continue  # in case all analyser were applied already, continue with next subject
-
-        # Get model performance & LRP heatmap on individual
-        i_sub = np.array([sub_nr])
-        cprint(f"Subject {sub_nr}", fm="ul")
-
-        i_mri = mris[i_sub]
-        if i_mri.ndim < 5:  # should be e.g.:  (1, 198, 198
-            # For incomplete sequence data (e.g. SWI) & return_nones=True
-            i_mri = i_mri[0][0]
-            if i_mri is None:
-                cprint(f"No MRI for Subject {sub_nr} in given dataset!", 'r')
-                continue
-            else:
-                i_mri = i_mri.reshape((1, *list(i_mri.shape), 1))  # (1, 198, 198, 198, 1)
-
-        i_pred = classes[int(np.argmax(pre_model.predict(x=i_mri)))] if binary_cls else \
-            pre_model.predict(x=i_mri)[0][0].item()  # ,item(): np.float => float
-        i_target = classes[int(np.argmax(targets[i_sub]))] if binary_cls else targets[i_sub][0]
-        try:
-            i_target = i_target.item()  # np.float => float
-        except AttributeError:
-            pass
-        print(f"prediction:\t{i_pred:{'.2f' if isinstance(i_pred, float) else ''}}")
-        print(f"target:\t\t{i_target}")
-
-        # Get model prediction for given MRI
-        t = int(i_target) if isinstance(i_target, float) else i_target  # else str
-        t_y = np.round(i_pred, 2) if isinstance(i_pred, float) else i_pred
-        # t_y = pre_model.predict(x=mri)[0][0]
-
-        neuron_selection = range(pre_model.output_shape[-1]) if neuron_analysis else [None]  # n classes
-
-        ipt = analyze_model(mri=i_mri, analyzer_type="input", model_=pre_model, norm=True)
-
-        for idx, analy_type in enumerate(sub_analyser):
-
-            for neuro_i in neuron_selection:
-                a = analyze_model(mri=i_mri, analyzer_type=analy_type, model_=pre_model, norm=True,
-                                  **({"neuron_selection": neuro_i} if isinstance(neuro_i, int) else {}))
-
-                plot_heatmap(sub_nr=sub_nr, t=t, t_y=t_y, ipt=ipt, analyzer_obj=a,
-                             analyzer_type=analy_type,
-                             fix_clim=fix_clim,
-                             fn_suffix=f"_N-{classes[neuro_i]}" if isinstance(neuro_i, int) else "",
-                             save_folder=save_folder,
-                             suptitle=suptitle)
-
-            # TODO plot 3d (maybe scatter 3d) ?!
-            # multi_slice_viewer(mri=a, cmap="seismic", clim=clim)
 
 # << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< END

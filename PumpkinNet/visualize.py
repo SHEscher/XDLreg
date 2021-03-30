@@ -1,9 +1,9 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Some functions to visualize MRIs
+Some functions to visualize images and relevance maps.
 
-Author: Simon M. Hofmann | <[firstname].[lastname][at]cbs.mpg.de> | 2018-2020
+Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 """
 # %% Import
 import os
