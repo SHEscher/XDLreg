@@ -21,7 +21,7 @@ from PumpkinNet.run_simulation import run_simulation
 
 def main():
     print(f"\nExecute __main__.py in {__file__}\n")  # TODO temporary:
-
+    # TODO add shell *args
     run_simulation()
     end()
 
