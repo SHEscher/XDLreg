@@ -353,7 +353,7 @@ class PumpkinSet:
                 setup="from PumpkinNet.simulation_data import PumpkinHead, np, min_age, max_age",
                 number=3)/3  # approx. time to create one PumpkinHead
             # Estimated time to create dataset
-            t_est = (t * self.n_samples) / (os.cpu_count()*0.95)  # .95, here, factor to start process
+            t_est = (t * self.n_samples) / (os.cpu_count()*0.99)  # .99 = factor to start process
             cprint(f"Creating whole dataset via parallel processing will take about: "
                    f"{chop_microseconds(timedelta(seconds=t_est))} [h:m:s] ...", col='y')
 
