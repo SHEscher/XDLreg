@@ -364,7 +364,6 @@ class PumpkinSet:
             self._data = list(heads)
             cprint(f"Created {self.n_samples} pumpkins in "
                    f"{chop_microseconds(datetime.now() - start_time)} [hh:min:sec].", 'b')
-            exit()  # TODO REMOVE AFTER TESTING
 
         except Exception as e:
             # print(e)
