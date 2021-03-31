@@ -352,7 +352,8 @@ class PumpkinSet:
                 stmt="PumpkinHead(np.random.randint(low=min_age, high=max_age+1))",
                 setup="from PumpkinNet.simulation_data import PumpkinHead, np, min_age, max_age",
                 number=3)/3  # approx. time to create one PumpkinHead
-            t_est = (t * self.n_samples) / os.cpu_count()  # estimated time to create whole dataset
+            # Estimated time to create dataset
+            t_est = (t * self.n_samples) / (os.cpu_count()*0.95)  # .95, here, factor to start process
             cprint(f"Creating whole dataset via parallel processing will take about: "
                    f"{chop_microseconds(timedelta(seconds=t_est))} [h:m:s] ...", col='y')
 
@@ -363,7 +364,7 @@ class PumpkinSet:
             self._data = list(heads)
             cprint(f"Created {self.n_samples} pumpkins in "
                    f"{chop_microseconds(datetime.now() - start_time)} [hh:min:sec].", 'b')
-            exit()
+            exit()  # TODO REMOVE AFTER TESTING
 
         except Exception as e:
             # print(e)
