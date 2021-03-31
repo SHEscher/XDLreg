@@ -13,21 +13,25 @@ import numpy as np
 
 # %% Create colored heatmap ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
 
-def gregoire_black_firered(R):
-    R /= np.max(np.abs(R))
-    x = R
+def gregoire_black_firered(robj: np.ndarray):
+    """
+    Create RGB version of given relevance/analyzer object.
+    :param robj: relevance object
+    :return: RBG version of relevance object
+    """
+    x = robj.copy()  # there 'mutable' issues
+    x /= np.max(np.abs(x))
 
-    hrp = np.clip(x - 0.00, 0, 0.25) / 0.25  # all pos. values(+) above 0 get red, above .25 full red(=1.)
-    hgp = np.clip(x - 0.25, 0, 0.25) / 0.25  # all above .25 get green, above .50 full green
-    hbp = np.clip(x - 0.50, 0, 0.50) / 0.50  # all above .50 get blue until full blue at 1. (mix 2 white)
+    hrp = np.clip(x - 0.00, 0, 0.25) / 0.25
+    hgp = np.clip(x - 0.25, 0, 0.25) / 0.25
+    hbp = np.clip(x - 0.50, 0, 0.50) / 0.50
 
-    hbn = np.clip(-x - 0.00, 0, 0.25) / 0.25  # all neg. values(-) below 0 get blue ...
-    hgn = np.clip(-x - 0.25, 0, 0.25) / 0.25  # ... green ....
-    hrn = np.clip(-x - 0.50, 0, 0.50) / 0.50  # ... red ... mixes to white (1.,1.,1.)
+    hbn = np.clip(-x - 0.00, 0, 0.25) / 0.25
+    hgn = np.clip(-x - 0.25, 0, 0.25) / 0.25
+    hrn = np.clip(-x - 0.50, 0, 0.50) / 0.50
 
-    return np.concatenate([(hrp + hrn)[..., None],
-                           (hgp + hgn)[..., None],
-                           (hbp + hbn)[..., None]], axis=x.ndim)
+    return np.concatenate([(hrp + hrn)[..., None], (hgp + hgn)[..., None], (hbp + hbn)[..., None]],
+                          axis=x.ndim)
 
 
 def create_cmap(color_fct, res=4999):
@@ -97,6 +101,7 @@ def symmetric_clip(analyzer_obj, percentile=1-1e-2, min_sym_clip=True):
     :param analyzer_obj: LRP analyser object
     :param percentile: default: keep very small values at border of range out. percentile=1: no change
     :param min_sym_clip: True: finds the min(abs(R.min), R.max) to clip symmetrically
+    :return symmetrically clipped analyzer object
     """
 
     assert .5 <= percentile <= 1, "percentile must be in range (.5, 1)!"
@@ -134,45 +139,44 @@ def symmetric_clip(analyzer_obj, percentile=1-1e-2, min_sym_clip=True):
         return analyzer_obj
 
 
-def apply_colormap(R, inputimage=None, cintensifier=1., clipq=1e-2,
-                   min_sym_clip=False, gamma=0.2, gblur=0, true_scale=False):
+def apply_colormap(robj: np.ndarray, inputimage: np.ndarray = None, cintensifier: float = 1.,
+                   clipq: float = 1e-2, min_sym_clip: bool = False, gamma: float = 0.2,
+                   true_scale: bool = False):
     """
     Merge relevance tensor with input image to receive a heatmap over the input space.
-    :param R: relevance map/tensor
+
+    :param robj: relevance map/tensor
     :param inputimage: input image
-    :param cintensifier: [1, ...[ increases the color strength by multiplying + clipping [DEPRECATED]
+    :param cintensifier: [1, ...[ increases the color strength by multiplying
     :param clipq: clips off given percentile of relevance symmetrically around zero. range: [0, .5]
     :param min_sym_clip: True: finds the min(abs(R.min), R.max) to clip symmetrically around zero
     :param gamma: the smaller the gamma (< 1.) the brighter, for gamma > 1., the image gets darker
-    :param gblur: ignore for now
-    :param true_scale: True: return min/max R value (after clipping) for true col scaling in e.g. cbar
-    :return: heatmap merged with input
+    :param true_scale: True: return min/max robj value (after clip) for true color-scaling in e.g. cbar
+    :return: heatmap merged with input, the RGB version, and if true_scale, also the max-value of robj
     """
 
-    # # Prep Input Image
+    # # Prep input image
     img = inputimage.copy()
-    _R = R.copy()  # since mutable
+    x = robj.copy()  # there 'mutable' issues
     # Check whether image has RGB(A) channels
     if img.shape[-1] <= 4:
         img = np.mean(img, axis=-1)  # removes rgb channels
-    # Following creates a grayscale image (for MRI case, no difference)
+    # Following creates a grayscale image
     img = np.concatenate([img[..., None]] * 3, axis=-1)  # (X,Y,Z, [r,g,b]), where r=g=b (i.e., grayscale)
-    # normalize image (0, 1)
-    if img.min() < 0.:  # for img range (-1, 1)
-        img += np.abs(img.min())
+    # Normalize image (0, 1)
     img /= np.max(np.abs(img))
 
-    # Symmetrically clip relevance values around zero
+    # # Symmetrically clip relevance values around zero
     assert 0. <= clipq <= .5, "clipq must be in range (0, .5)!"
-    _R = symmetric_clip(analyzer_obj=_R, percentile=1-clipq, min_sym_clip=min_sym_clip)
-    rmax = np.abs(_R).max()  # symmetric: rmin = -rmax
+    x = symmetric_clip(analyzer_obj=x, percentile=1-clipq, min_sym_clip=min_sym_clip)
+    rmax = np.abs(x).max()  # symmetric: rmin = -rmax
 
     # # Normalize relevance tensor
-    _R /= np.max(np.abs(_R))
+    x /= np.max(np.abs(x))
     # norm to [-1, 1] for real numbers, or [0, 1] for R+, where zero remains zero
 
     # # Apply chosen cmap
-    r_rgb = gregoire_black_firered(_R)
+    r_rgb = gregoire_black_firered(x)  # other cmaps are possible
 
     # Increase col-intensity
     if cintensifier != 1.:
@@ -181,14 +185,9 @@ def apply_colormap(R, inputimage=None, cintensifier=1., clipq=1e-2,
         r_rgb = r_rgb.clip(0., 1.)
 
     # Merge input image with heatmap via inverse alpha channels
-    alpha = np.abs(_R[..., None])  # as alpha channel, use (absolute) relevance map amplitude.
-    alpha = np.concatenate([alpha] * 3, axis=-1) ** gamma  # (X,Y,Z, 3)
+    alpha = np.abs(x[..., None])  # as alpha channel, use (absolute) relevance map amplitude.
+    alpha = np.concatenate([alpha] * 3, axis=-1) ** gamma  # (X, Y, Z, 3)
     heat_img = (1 - alpha) * img + alpha * r_rgb
-
-    # Apply Gaussian blur
-    if gblur > 0:  # there is a bug in opencv which causes an error with this command
-        raise ValueError("'gaussblur' currently not activated, keep 'gaussblur=0' for now!")
-        # hm = cv2.GaussianBlur(HM, (gaussblur, gaussblur), 0)
 
     if true_scale:
         return heat_img, r_rgb, rmax

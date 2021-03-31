@@ -24,11 +24,22 @@ p2models = os.path.join(p2results, "model")
 
 # %% ConvNet << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-def create_simulation_model(name="PumpkinNet", output_bias=None, input_shape=(98, 98), batch_norm=False,
-                            class_task=False):
-    # TODO ADD CITATION / DOI
+# TODO ADD CITATION / DOI
+def create_simulation_model(name: str = "PumpkinNet", output_bias: float = None,
+                            input_shape: tuple = (98, 98), batch_norm: bool = False,
+                            class_task: bool = False):
     """
+
     This is a 2D adaptation of the model reported in Hofmann et al. (2021)
+
+    :param name: name of model
+    :param output_bias: for regression tasks setting the output bias to target mean can ease the training
+                        process. Also, for relevance analysis, this can do improved imterpretability of
+                        sign of relevance values.
+    :param input_shape: shape of single image sample
+    :param batch_norm: whether to include batch norm layers
+    :param class_task: whether model will be applied on classification problem
+    :return: build model
     """
 
     name += "BiCL" if class_task else ""
@@ -36,7 +47,8 @@ def create_simulation_model(name="PumpkinNet", output_bias=None, input_shape=(98
 
     actfct = "relu"
 
-    # 3D-Conv
+    # # 2D-convolutional neural network (CNN)
+    # Can be written more compact, but this comes with a bit more flexibility w.r.t. adaptations.
     if batch_norm:
         kmodel.add(keras.layers.BatchNormalization(input_shape=input_shape + (1,)))
         kmodel.add(keras.layers.Conv2D(filters=16, kernel_size=(3, 3), padding="SAME",
@@ -62,7 +74,7 @@ def create_simulation_model(name="PumpkinNet", output_bias=None, input_shape=(98
     kmodel.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), padding="SAME", activation=actfct))
     kmodel.add(keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding="SAME"))
 
-    # 3D-Conv (1x1x1)
+    # 2D-Conv (1x1x1)
     if batch_norm:
         kmodel.add(keras.layers.BatchNormalization())
     kmodel.add(keras.layers.Conv2D(filters=32, kernel_size=(1, 1), padding="SAME", activation=actfct))
@@ -79,20 +91,16 @@ def create_simulation_model(name="PumpkinNet", output_bias=None, input_shape=(98
     # Output
     if not class_task:
         kmodel.add(keras.layers.Dense(
-            units=1, activation='linear',
-            # add target bias == 57.317 (for age), or others
-            use_bias=True,
+            units=1, activation='linear', use_bias=True,
             bias_initializer="zeros" if output_bias is None else keras.initializers.Constant(
                 value=output_bias)))
 
     else:
-        kmodel.add(keras.layers.Dense(units=2,
-                                      activation='softmax',  # in binary case. also: 'sigmoid'
-                                      use_bias=False))  # default: True
+        kmodel.add(keras.layers.Dense(units=2, use_bias=False,
+                                      activation='softmax'))  # in binary case. also: 'sigmoid'
 
     # Compile
-    kmodel.compile(optimizer=keras.optimizers.Adam(5e-4),  # ="adam",
-                   loss="mse",
+    kmodel.compile(optimizer=keras.optimizers.Adam(5e-4), loss="mse",
                    metrics=["accuracy"] if class_task else ["mae"])
 
     # Summary
@@ -101,13 +109,22 @@ def create_simulation_model(name="PumpkinNet", output_bias=None, input_shape=(98
     return kmodel
 
 
-def is_binary_classification(model_name):
+def is_binary_classification(model_name: str) -> bool:
+    """
+    Report whether model was used for a binary classification task.
+    :param model_name: name of model
+    :return: is model for binary classification [bool]
+    """
     return "BiCL" in model_name
 
 
 # %% Plotting << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><
 
 def plot_training_process(_model):
+    """
+    Plot the training process of given model.
+    :param _model: model
+    """
     history_file = f"{p2models}/{_model.name}/{_model.name}_history.npy"
     if os.path.isfile(history_file) and not os.path.isfile(history_file.replace(".npy", ".png")):
         _binary_cls = is_binary_classification(_model.name)
@@ -133,7 +150,12 @@ def plot_training_process(_model):
 
 
 def plot_prediction(_model, xdata, ydata):
-
+    """
+    Plot predictions of model for given data.
+    :param _model: model
+    :param xdata: input data
+    :param ydata: target variable
+    """
     _target = "age"
 
     # # Calculate model-performance
@@ -224,7 +246,15 @@ def plot_prediction(_model, xdata, ydata):
 # %% Train model << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
 @function_timed
-def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
+def train_simulation_model(pumpkin_set: classmethod, epochs: int = 80, batch_size: int = 4) -> str:
+    """
+    Train model on simulated dataset.
+
+    :param pumpkin_set: dataset containing simulated images (ageing 'pumpkins')
+    :param epochs: number of training epochs
+    :param batch_size: size of batch
+    :return: name of model
+    """
     # Prep data for model
     xdata, ydata = pumpkin_set.data2numpy(for_keras=True)
     x_train, x_val, x_test, y_train, y_val, y_test = split_simulation_data(xdata=xdata, ydata=ydata,
@@ -278,7 +308,12 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
     return model.name
 
 
-def crop_model_name(model_name):
+def crop_model_name(model_name: str) -> str:
+    """
+    Crop model name, removing file-type etc.
+    :param model_name: name of model
+    :return: cropped name of model
+    """
     if model_name.endswith(".h5"):
         model_name = model_name[0:-len(".h5")]
 
@@ -288,7 +323,12 @@ def crop_model_name(model_name):
     return model_name
 
 
-def load_trained_model(model_name=None):
+def load_trained_model(model_name: str = None):
+    """
+    Load a (trained) model.
+    :param model_name: name of model, can be None: then browsing option will be opened.
+    :return: trained model
+    """
     if model_name:
         if os.path.isdir(os.path.join(p2models, crop_model_name(model_name))):
             # Load & return ensemble model
@@ -310,7 +350,13 @@ def load_trained_model(model_name=None):
         return load_trained_model(model_name=_model_name)
 
 
-def get_model_data(model_name, for_keras=True):
+def get_model_data(model_name: str, for_keras: bool = True):
+    """
+    Get data for given model. That is, the data the model was trained on.
+    :param model_name: name of model
+    :param for_keras: True: prepare data, such that they can directly used for the given model
+    :return: dataset for model training and evaluation
+    """
     n_samples = int(model_name.split("_")[-2])
     uniform = "non-uni" not in model_name
     age_bias = None if uniform else float(model_name.split("uniform")[-1])

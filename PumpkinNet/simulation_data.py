@@ -1,5 +1,5 @@
 """
-Create simulation data
+Create simulation data.
 
 Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 """
@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from skimage import draw
 
-from utils import root_path, cprint, chop_microseconds, save_obj, load_obj, loop_timer
+from utils import root_path, cprint, chop_microseconds, save_obj, load_obj, loop_timer, function_timed
 
 # %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
 
@@ -30,11 +30,16 @@ p2data = os.path.join(root_path, "Data")
 
 # %% Create image data ("Pumpkins") << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
 
-def make_pumpkin(age, img_size=(98, 98)):
-    """Create elliptic shape of random (head) size. Thickness grows proportionally. Add noise."""
-
+def make_pumpkin(age: int, img_size: tuple = (98, 98)) -> np.ndarray:
+    """
+    Create elliptic shape of random (head) size. Thickness grows proportionally. Add noise.
+    This is template for the PumpkinHead class.
+    :param age: age of pumpkin, here only for general 'head' size of pumpkin.
+    :param img_size: image size
+    :return: pumpkin head
+    """
     # Size of pumpkin with some random variance
-    p_size = (40 + 2 * np.clip(age, 0, 20),  # i.e. for age >= 20, the standard brain size is (80, 65) + v
+    p_size = (40 + 2 * np.clip(age, 0, 20),  # i.e. for age >= 20, standard 'brain' size is (80, 65) + v
               25 + 2 * np.clip(age, 0, 20))
     p_size += np.random.normal(loc=0, scale=p_size[0] / 20, size=2)  # v
 
@@ -61,8 +66,11 @@ def make_pumpkin(age, img_size=(98, 98)):
     return pumpkin
 
 
-def random_name():
-    """Create name (pseudonym) for pumpkin head."""
+def random_name() -> str:
+    """
+    Create random name for pumpkin head. This simulates the pseudonym in a human study (e.g., with MRI)
+    :return random name
+    """
     # PH + 3 Chars + 9 digit number
     rand_name = "PH" + "".join(np.random.choice(a=list(string.ascii_letters), size=3, replace=True))
     rand_name += str(np.random.randint(0, 10 ** 8)).zfill(9)  # with 1 leading zero
@@ -70,7 +78,14 @@ def random_name():
 
 
 class PumpkinHead:
+    """Class of ageing pumpkin heads."""
+
     def __init__(self, age, name=None):
+        """
+        Create instance of PumpkinHead.
+        :param age: age of pumpkin.
+        :param name: name of pumpkin. If not given (None), will be automatically generated.
+        """
         self.age = age
         self.name = random_name() if name is None else name
         self.pumpkin_brain = make_pumpkin(age=age)
@@ -81,14 +96,17 @@ class PumpkinHead:
         self.grow()
 
     def grow(self):
-        """Run several ageing processes on self.pumpkin_brain ad function of self.age"""
+        """
+        Run several ageing processes on self.pumpkin_brain as function of self.age
+        """
         self.add_lesions()
         self.add_atrophies()
 
     def add_atrophies(self, **kwargs):
         """
+        Linearly add atrophies to self.pumpkin_brain.
         Atrophies are probabilistically applied to surface area including inner surfaces
-        Reduce image intensity in a certain range up to zero (i.e. maximal reduction)
+        Reduce image intensity in a certain range up to zero (i.e. maximal reduction).
         """
 
         max_atrophies = max_age * kwargs.pop("max_atrophies", 5)  # keep max_age here to clip below
@@ -106,7 +124,6 @@ class PumpkinHead:
             self.n_lesions = 0 if expected_n_atrophies <= 0 + 5 else max_atrophies  # 0 + small margin
 
         else:
-
             all_probs = np.zeros(max_atrophies + 1)
             all_probs[np.unique(distr).astype(int)] = np.unique(distr, return_counts=True)[1]
             all_probs = all_probs / np.sum(all_probs)
@@ -141,7 +158,7 @@ class PumpkinHead:
 
     def add_lesions(self, **kwargs):
         """
-        Probabilistically add lesions within the self.pumpkin_brain of a certain size
+        Probabilistically, and non-linearly add lesions within the self.pumpkin_brain of a certain size.
         Increase image intensity clearly in a certain range.
         """
 
@@ -159,7 +176,6 @@ class PumpkinHead:
             # Values are out of range: set n_lesions to the respective range-extreme of expected value
             self.n_lesions = 0 if expected_n_lesions <= 0 + 5 else max_lesions  # 0 + small margin
         else:
-
             all_probs = np.zeros(max_lesions + 1)
             all_probs[np.unique(distr).astype(int)] = np.unique(distr, return_counts=True)[1]
             all_probs = all_probs / np.sum(all_probs)
@@ -190,66 +206,91 @@ class PumpkinHead:
                 ctn_lesions += 1
 
     def exhibition(self, **kwargs):
+        """
+        Plot pumpkin head.
+        :param kwargs: matplotlib.pyplot.imshow specific **kwargs.
+        """
         plt.figure(num=f"{self.name} | age={self.age}")
         cmap = kwargs.pop("cmap", "gist_heat")
         plt.imshow(self.pumpkin_brain, cmap=cmap, **kwargs)
         plt.show()
 
 
-# # TODO 3D images
-# For instance, use MNI template, and binarize it then apply some 'age'-related changes (e.g. lesions)"""
+# TODO 3D case: for instance, use MNI template and apply changes as function of age
 
 # %% Create dataset << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-def generate_set_name(n_samples, uniform, age_bias):
+def generate_set_name(n_samples: int, uniform: str, age_bias) -> str:
+    """
+    Generate the name of a simulated dataset as function of given arguments.
+    :param n_samples: number of samples in dataset
+    :param uniform: whether dataset is uniformly distributed
+    :param age_bias: None (only for uniform datasets) OR certain age int/flaot (uniform / non-uniform)
+    :return: name of dataset (will be used as suffiix after time-stamp)
+    """
     if not uniform:
         assert age_bias is not None, "For non-uniform datasets, age_bias must be provided."
     return f"N-{n_samples}_{'' if uniform else 'non-'}uniform" + ("" if uniform else f"{age_bias:.1f}")
 
 
 class PumpkinSet:
+    """Dataset class of simulated head images ('pumpkins')."""
 
-    def __init__(self, n_samples, uniform=True, age_bias=None, skew_factor=.8,
-                 name=None, save=True):
+    def __init__(self, n_samples: int, uniform: bool = True, age_bias: float = None,
+                 skew_factor: float = .8, save: bool = True):
+        """
+        Create instance of PumpkinSet class.
+        :param n_samples: number of samples in dataset
+        :param uniform: whether dataset is uniformly distributed
+        :param age_bias: for non-uniform datasets provide age-bias.
+        :param skew_factor: parameter which influences the data distribution (only for non-uniform)
+        :param save: Whether to save dataset externally.
+        """
         self._n_samples = n_samples
         self._age_distribution = None
         self._age_bias = age_bias
         self._is_uniform = uniform
         self._draw_sample_distribution(uniform=uniform, age_bias=age_bias, skew_factor=skew_factor)
         self._data = [None] * n_samples
+        self._name = datetime.now().strftime('%Y-%m-%d_%H-%M_') + generate_set_name(n_samples, uniform,
+                                                                                   age_bias)
         self._generate_data()
-
-        if name is None:
-            self.name = datetime.now().strftime('%Y-%m-%d_%H-%M_') + generate_set_name(n_samples, uniform,
-                                                                                       age_bias)
-        else:
-            self.name = name
-
         if save:
             self.save()
 
     @property
-    def n_samples(self):
+    def name(self) -> str:
+        """Return name of simulated dataset."""
+        return self._name
+
+    @property
+    def n_samples(self) -> int:
+        """Return number of samples in simulated dataset."""
         return self._n_samples
 
     @property
-    def is_uniform(self):
+    def is_uniform(self) -> bool:
+        """Return whether simulated dataset is uniformaly distributed."""
         return self._is_uniform
 
     @property
     def age_distribution(self):
+        """Return age distribution in simulated dataset."""
         return self._age_distribution
 
     @property
     def age_bias(self):
+        """Return age bias in simulated dataset (None for uniformly distributed datasets)."""
         # Note this is not equal to the distribution mean
         return self._age_bias
 
     @property
     def data(self):
+        """Return the simulated image data of class PumpkinHead."""
         return self._data
 
-    def display_distrubtion(self):
+    def display_distrubtion(self) -> None:
+        """Plot the age distribution of the simulated dataset."""
         plt.figure(f"Age distribution in {self.name}", figsize=(6, 4), dpi=150)
         h = sns.histplot(self.age_distribution, binwidth=1, kde=True, color="cadetblue", alpha=.5)
         ymax = int(h.axes.get_ylim()[-1] * .9)
@@ -263,7 +304,14 @@ class PumpkinSet:
         plt.tight_layout()
         plt.show()
 
-    def _draw_sample_distribution(self, uniform: bool, age_bias=None, skew_factor=.8):
+    def _draw_sample_distribution(self, uniform: bool, age_bias: float = None,
+                                  skew_factor: float = .8) -> None:
+        """
+        Draw sample distrubtion either uniformly or non-uniformly (with certain age-bias and skew-factor).
+        :param uniform: whether dataset is uniformly distributed
+        :param age_bias: for non-uniform datasets provide age-bias.
+        :param skew_factor: parameter which influences the data distribution (only for non-uniform)
+        """
         if uniform:
             self._age_distribution = np.random.choice(a=np.arange(min_age,
                                                                   max_age + 1),
@@ -291,8 +339,12 @@ class PumpkinSet:
             # Shuffle order
             np.random.shuffle(self._age_distribution)
 
-    def _generate_data(self):
-
+    @function_timed
+    def _generate_data(self) -> None:
+        """
+        Generate image data for dataset (N=self.n_samples).
+        Depending on sample size, this can take a while.
+        """
         try:
             cprint(f"Start creating the pumpkin dataset of {self.name} ...", 'b')
             start_time = datetime.now()
@@ -303,20 +355,26 @@ class PumpkinSet:
             cprint(f"Created {self.n_samples} pumpkins in "
                    f"{chop_microseconds(datetime.now() - start_time)} [hh:min:sec].", 'b')
 
-        except Exception:
+        except Exception as e:
+            # print(e)
             start_time = datetime.now()
             for i, age in enumerate(self.age_distribution):
                 self._data[i] = PumpkinHead(age=age)
                 loop_timer(start_time=start_time, loop_length=self.n_samples, loop_idx=i,
                            loop_name="Create Pumpkin Dataset")
 
-    def save(self):
+    def save(self) -> None:
+        """Save this instance of PumpkinSet (self) externally."""
         if not os.path.exists(p2data):
             os.mkdir(p2data)
         save_obj(obj=self, name=self.name, folder=p2data)
 
-    def data2numpy(self, for_keras=True):
-        # len(self.data) == self.n_samples
+    def data2numpy(self, for_keras: bool = True):
+        """
+        Convert dataset to numpy arrays.
+        :param for_keras: add empty axis to image-data, such that a Keras model can take them as input.
+        :return: dataset as numpy arrays (x: images; y: age-vector)
+        """
         ydata = np.array([self.data[i].age for i in range(self.n_samples)])
 
         img_shape = self.data[0].pumpkin_brain.shape
@@ -328,14 +386,17 @@ class PumpkinSet:
         if for_keras:
             xdata = xdata[..., np.newaxis]
 
-        print("xdata.shape:", xdata.shape)  # TEST
-        print("ydata.shape:", ydata.shape)  # TEST
-
         return xdata, ydata
 
 
-def get_pumpkin_set(n_samples=2000, uniform=True, age_bias=None):
-
+def get_pumpkin_set(n_samples: int = 2000, uniform: bool = True, age_bias: float = None):
+    """
+    Get dataset (class PumpkinSet) with given properties (**kwargs) either from memory, or generates it.
+    :param n_samples: number of samples in dataset
+    :param uniform: whether dataset is uniformly distributed
+    :param age_bias: for non-uniform datasets provide age-bias.
+    :return: dataset (class PumpkinSet)
+    """
     assert n_samples >= 100, "Simulated dataset can't be smaller than a 100 samples."
 
     df_files = os.listdir(p2data) if os.path.exists(p2data) else []
@@ -354,7 +415,16 @@ def get_pumpkin_set(n_samples=2000, uniform=True, age_bias=None):
 
 # %% Prepare data for model training << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
 
-def split_simulation_data(xdata, ydata, return_idx=False, only_test=False):
+def split_simulation_data(xdata: np.ndarray, ydata: np.ndarray, return_idx: bool = False,
+                          only_test: bool = False):
+    """
+    Split simulation data into training, validation, and test set.
+    :param xdata: image data
+    :param ydata: age data (target)
+    :param return_idx: whether to return index (for test set only) or indeces where data was split.
+    :param only_test: whether to return only data of test set.
+    :return: split data (training, validation, test; OR only test)
+    """
     dsize = len(ydata)  # n samples
 
     # Get split indices

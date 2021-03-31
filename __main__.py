@@ -20,7 +20,10 @@ from PumpkinNet.run_simulation import run_simulation
 # %% Run simulation when main is called << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
 def get_args():
-
+    """
+    Parse arguments given via shell.
+    :return: valid arguments for PumpkinNet.run_simulation
+    """
     parser = argparse.ArgumentParser(description="Arguments relevant for model training & heatmap plots.")
     # TODO consider adding project path
     parser.add_argument('--n_samples', type=int, default=2000,
@@ -41,9 +44,13 @@ def get_args():
 
 
 def main():
-
-    print(f"\nExecute __main__.py in {__file__}\n")  # TODO temporary
-    print(get_args())
+    """
+    Run whole pipeline of:
+    1) creating a simulated dataset
+    2) building and training a model (ConvNet) on that dataset, and
+    3) analyzing the model predictions with the LRP algorithm.
+    """
+    print(f"Execute __main__.py in {__file__}\n")
     run_simulation(**vars(get_args()))
     end()
 

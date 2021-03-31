@@ -28,8 +28,20 @@ p2relevance = os.path.join(p2results, "relevance")
 # %% Create heatmaps & plots << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
 
 
-def create_relevance_dict(model_name, subset="test", analyzer_type="lrp.sequential_preset_a", save=True):
+def create_relevance_dict(model_name: str, subset: str = "test",
+                          analyzer_type: str="lrp.sequential_preset_a", save: bool = True):
+    """
+    Compute relevance maps of given analyzer type (default is LRP) for a model and all subjects it was
+    evaluated on.
 
+    :param model_name: name of model
+    :param subset: heatmaps are most representative for test set. But also possible to plot heatmaps of
+                   subjects in the 'validation' and 'training' set.
+    :param analyzer_type: type of analyzer for model decisions. Note colormaps might be off for other
+                          types of analyzer, which iNNvestigate offers.
+    :param save: Whether to save dict externally, for quick access.
+    :return:
+    """
     try:
         rel_obj = load_obj(name=f"relevance-maps_{subset}-set", folder=os.path.join(p2relevance,
                                                                                     model_name))
@@ -46,21 +58,7 @@ def create_relevance_dict(model_name, subset="test", analyzer_type="lrp.sequenti
 
         analyzer = innvestigate.create_analyzer(analyzer_type, _model, disable_model_checks=True,
                                                 neuron_selection_mode="max_activation")
-
         rel_obj = analyzer.analyze(xdata, neuron_selection=None).squeeze()
-        # can do multiple samples in e.g. xdata.shape (200, 98, 98, 1)
-
-        # rel_dict = {}
-        # start = datetime.now()
-        # for sub in range(len(ydata)):
-        #     img = xdata[sub].copy()
-        #     img = img[np.newaxis, ...]
-        #     # Generate relevance map
-        #     a = analyze_model(mri=img, analyzer_type=analyzer_type, model_=_model, norm=False)
-        #     # Fill dict
-        #     rel_dict.update({sub: a})
-        #     loop_timer(start_time=start, loop_length=len(ydata), loop_idx=sub,
-        #                loop_name="Generate Heatmaps")
 
         if save:
             save_obj(obj=rel_obj, name=f"relevance-maps_{subset}-set", folder=os.path.join(p2relevance,
@@ -69,9 +67,24 @@ def create_relevance_dict(model_name, subset="test", analyzer_type="lrp.sequenti
     return rel_obj
 
 
-def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
-                             analyzer_type="lrp.sequential_preset_a", pointers=True, cbar=False,
-                             true_scale=False, fm="pdf"):
+def plot_simulation_heatmaps(model_name: str, n_subjects: int = 20, subset: str = "test",
+                             analyzer_type: str = "lrp.sequential_preset_a", pointers: bool = True,
+                             cbar: bool = False, true_scale: bool = False, fm: str = "pdf"):
+
+    """
+    Plot heatmaps/relevance maps for a set of subjects.
+
+    :param model_name: name of model
+    :param n_subjects: number of subjects/plots.
+    :param subset: heatmaps are most representative for test set. But also possible to plot heatmaps of
+                   subjects in the 'validation' and 'training' set.
+    :param analyzer_type: type of analyzer for model decisions. Note colormaps might be off for other
+                          types of analyzer, which iNNvestigate offers.
+    :param pointers: Plots include markers which point to simulated lesions and atrophies in the image.
+    :param cbar: Whether to add a color bar to the plot.
+    :param true-scale: True: do not normalize the relevance values between (-1, 1)
+    :param fm: saving format of plot, including 'pdf', 'png' ...
+    """
 
     # Get model
     _model = load_trained_model(model_name)
@@ -93,15 +106,13 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
         # xdata, ydata = ...
         raise NotImplementedError("Not implemented yet for other subsets than 'test'")
 
-    # Check whether too many plots are requested
+    # Check whether too many plots are requested, and adjust if necessary
     n_subjects = n_subjects if len(ydata) >= n_subjects else len(ydata)
 
     for sub in range(n_subjects):
-        # sub = 0
         img = xdata[sub].copy()
         img = img[np.newaxis, ...]
         a = rel_obj[sub]
-        # plt.imshow(a)
 
         col_a = apply_colormap(R=a, inputimage=img.squeeze(), cintensifier=5., gamma=.2,
                                true_scale=true_scale)
@@ -115,7 +126,7 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
 
         if cbar:
             cbar_range = (-1, 1) if not true_scale else (-col_a[2], col_a[2])
-            caxbar = fig.colorbar(aximg, ax=ax, fraction=0.048, pad=0.04)  # shrink=0.8, aspect=50)
+            caxbar = fig.colorbar(aximg, ax=ax, fraction=0.048, pad=0.04)
             caxbar.set_ticks(np.linspace(0, 1, 7), True)
             caxbar.ax.set_yticklabels(labels=[f"{tick:.2g}" for tick in np.linspace(
                 cbar_range[0], cbar_range[1], len(caxbar.get_ticks()))])
@@ -130,29 +141,24 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
 
         if pointers:
             phead = pdata.data[didx[0]+sub]
-            # phead.exhibition()
-            # cntr = np.array(col_a[0].shape[:-1]) // 2  # center of image
 
             # Mark atrophies
             for coord in phead.atrophy_coords:
-                plt.plot(coord[1], coord[0], "s", color="#D3F5D4",  # "lightgreen"
-                         ms=2, alpha=.9)  # ms=4: full-pixel
+                plt.plot(coord[1], coord[0], "s", color="#D3F5D4", ms=2, alpha=.9)  # ms=4: full-pixel
 
             # Arrows to lesions
             for coord in phead.lesion_coords:
                 # Shadow
                 plt.annotate(text='', xy=coord[::-1],
-                             # xytext=(coord[::-1] + cntr)//2,  # arrows come from center
                              xytext=np.array(coord[::-1]) + [-4.6, 5.4],
-                             arrowprops=dict(arrowstyle='simple', color="black",
-                                             alpha=.5))
+                             # xytext=(coord[::-1] + cntr)//2,  # arrows come from center
+                             arrowprops=dict(arrowstyle='simple', color="black", alpha=.5))
 
                 # Arrow
                 plt.annotate(text='', xy=coord[::-1],
-                             # xytext=(coord[::-1] + cntr)//2,  # arrows come from center
                              xytext=np.array(coord[::-1]) + [-5, 5],
-                             arrowprops=dict(arrowstyle='simple', color="#E3E7E3",  # "lightgreen"
-                                             alpha=.9))
+                             # xytext=(coord[::-1] + cntr)//2,  # arrows come from center
+                             arrowprops=dict(arrowstyle='simple', color="#E3E7E3", alpha=.9))
 
             plt.tight_layout()
 
