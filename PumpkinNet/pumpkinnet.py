@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from utils import cprint, p2results, browse_files, function_timed
-from PumpkinNet.simulation_data import split_simulation_data
+from PumpkinNet.simulation_data import split_simulation_data, get_pumpkin_set
 
 
 # %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
@@ -308,5 +308,17 @@ def load_trained_model(model_name=None):
         _model_name = path2model.split("/")[-1]
 
         return load_trained_model(model_name=_model_name)
+
+
+def get_model_data(model_name, for_keras=True):
+    n_samples = int(model_name.split("_")[-2])
+    uniform = "non-uni" not in model_name
+    age_bias = None if uniform else float(model_name.split("uniform")[-1])
+    if for_keras:
+        return get_pumpkin_set(n_samples=n_samples, uniform=uniform,
+                                 age_bias=age_bias).data2numpy(for_keras=True)
+    else:
+        return get_pumpkin_set(n_samples=n_samples, uniform=uniform,
+                               age_bias=age_bias)
 
 # <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END

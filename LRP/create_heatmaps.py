@@ -13,10 +13,11 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import innvestigate
 
 from utils import p2results, save_obj, load_obj
 from PumpkinNet.simulation_data import get_pumpkin_set, split_simulation_data
-from PumpkinNet.pumpkinnet import load_trained_model, is_binary_classification
+from PumpkinNet.pumpkinnet import load_trained_model, get_model_data, is_binary_classification
 from LRP.apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
 
 
@@ -34,12 +35,9 @@ def create_relevance_dict(model_name, subset="test", analyzer_type="lrp.sequenti
                                                                                     model_name))
     except FileNotFoundError:
 
-        import innvestigate
-
         _model = load_trained_model(model_name)
+        _x, _y = get_model_data(model_name=model_name)
 
-        _x, _y = get_pumpkin_set(n_samples=int(_model.name.split("_")[-2]),
-                                 uniform="non-uni" not in model_name).data2numpy(for_keras=True)
         if subset == "test":
             xdata, ydata = split_simulation_data(xdata=_x, ydata=_y, only_test=True)
         else:
@@ -86,8 +84,7 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
         raise NotImplementedError("Plotting of heatmaps for (binary) classification must be implemented!")
 
     # Prep data
-    pdata = get_pumpkin_set(n_samples=int(_model.name.split("_")[-2]),
-                            uniform="non-uni" not in model_name)
+    pdata = get_model_data(model_name=model_name, for_keras=False)
     _x, _y = pdata.data2numpy(for_keras=True)
     if subset == "test":
         xdata, ydata = split_simulation_data(xdata=_x, ydata=_y, only_test=True)
@@ -95,6 +92,9 @@ def plot_simulation_heatmaps(model_name, n_subjects=20, subset="test",
     else:
         # xdata, ydata = ...
         raise NotImplementedError("Not implemented yet for other subsets than 'test'")
+
+    # Check whether too many plots are requested
+    n_subjects = n_subjects if len(ydata) >= n_subjects else len(ydata)
 
     for sub in range(n_subjects):
         # sub = 0
