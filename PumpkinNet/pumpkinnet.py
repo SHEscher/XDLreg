@@ -6,6 +6,8 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 
 # %% Import
 
+import warnings
+warnings.filterwarnings("ignore", message=r"Passing", category=FutureWarning)  # primarily for tensorflow
 import os
 import keras
 import numpy as np
@@ -16,21 +18,18 @@ from utils import cprint, p2results, browse_files, function_timed
 from PumpkinNet.simulation_data import split_simulation_data
 
 
-# %% Global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
+# %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
 p2models = os.path.join(p2results, "model")
 
 
 # %% ConvNet << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98, 98), batch_norm=False,
+def create_simulation_model(name="PumpkinNet", output_bias=None, input_shape=(98, 98), batch_norm=False,
                             class_task=False):
     # TODO ADD CITATION / DOI
     """
     This is a 2D adaptation of the model reported in Hofmann et al. (2021)
     """
-
-    if target_bias is not None:
-        cprint(f"\nGiven target bias is {target_bias:.3f}\n", "y")
 
     name += "BiCL" if class_task else ""
     kmodel = keras.Sequential(name=name)  # OR: Sequential([keras.layer.Conv2d(....), layer...])
@@ -83,8 +82,8 @@ def create_simulation_model(name="PumpkinNet", target_bias=None, input_shape=(98
             units=1, activation='linear',
             # add target bias == 57.317 (for age), or others
             use_bias=True,
-            bias_initializer="zeros" if target_bias is None else keras.initializers.Constant(
-                value=target_bias)))
+            bias_initializer="zeros" if output_bias is None else keras.initializers.Constant(
+                value=output_bias)))
 
     else:
         kmodel.add(keras.layers.Dense(units=2,
@@ -233,7 +232,7 @@ def train_simulation_model(pumpkin_set, epochs=80, batch_size=4):
 
     # Create model
     _model_name = f"PumpkinNet_{pumpkin_set.name.split('N-')[-1]}"
-    model = create_simulation_model(name=_model_name, target_bias=np.mean(ydata))
+    model = create_simulation_model(name=_model_name, output_bias=np.mean(ydata))
 
     # Create folders
     if not os.path.exists(os.path.join(p2models, model.name)):

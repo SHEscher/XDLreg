@@ -6,7 +6,6 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 
 # %% Import
 import os
-
 from utils import cprint, open_folder
 from PumpkinNet.pumpkinnet import train_simulation_model
 from PumpkinNet.simulation_data import get_pumpkin_set

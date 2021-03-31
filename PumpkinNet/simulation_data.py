@@ -13,11 +13,12 @@ import concurrent.futures
 
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from skimage import draw
 
 from utils import root_path, cprint, chop_microseconds, save_obj, load_obj, loop_timer
 
-# %% Global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
+# %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
 
 # Set params
 max_age = 80
@@ -200,20 +201,27 @@ class PumpkinHead:
 
 # %% Create dataset << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
+def generate_set_name(n_samples, uniform, age_bias):
+    if uniform:
+        assert age_bias is not None, "For non-uniform datasets, age_bias must be provided."
+    return f"N-{n_samples}_{'' if uniform else 'non-'}uniform" + ("" if uniform else f"{age_bias:.1f}")
+
+
 class PumpkinSet:
 
     def __init__(self, n_samples, uniform=True, age_bias=None, skew_factor=.8,
                  name=None, save=True):
         self._n_samples = n_samples
         self._age_distribution = None
+        self._age_bias = age_bias
         self._is_uniform = uniform
         self._draw_sample_distribution(uniform=uniform, age_bias=age_bias, skew_factor=skew_factor)
         self._data = [None] * n_samples
         self._generate_data()
 
         if name is None:
-            self.name = datetime.now().strftime('%Y-%m-%d_%H-%M_') + f"N-{n_samples}_" \
-                                                                     f"{'' if uniform else 'non-'}uniform"
+            self.name = datetime.now().strftime('%Y-%m-%d_%H-%M_') + generate_set_name(n_samples, uniform,
+                                                                                       age_bias)
         else:
             self.name = name
 
@@ -233,8 +241,27 @@ class PumpkinSet:
         return self._age_distribution
 
     @property
+    def age_bias(self):
+        # Note this is not equal to the distribution mean
+        return self._age_bias
+
+    @property
     def data(self):
         return self._data
+
+    def display_distrubtion(self):
+        plt.figure(f"Age distribution in {self.name}", figsize=(6, 4), dpi=150)
+        h = sns.histplot(self.age_distribution, binwidth=1, kde=True, color="cadetblue", alpha=.5)
+        ymax = int(h.axes.get_ylim()[-1] * .9)
+        plt.vlines(x=30.5, ymin=0, ymax=ymax, colors="red", ls="dotted", label="age-bias")
+        plt.vlines(np.mean(self.age_distribution), ymin=0, ymax=ymax, colors="orange", ls="dashed",
+                   label="mean")
+        plt.vlines(np.median(self.age_distribution), ymin=0, ymax=ymax, colors="green", ls="dashed",
+                   label="median")
+        h.axes.set_xlabel("age")
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
 
     def _draw_sample_distribution(self, uniform: bool, age_bias=None, skew_factor=.8):
         if uniform:
@@ -312,9 +339,11 @@ def get_pumpkin_set(n_samples=2000, uniform=True, age_bias=None):
     assert n_samples >= 100, "Simulated dataset can't be smaller than a 100 samples."
 
     df_files = os.listdir(p2data) if os.path.exists(p2data) else []
+    f_suffix = generate_set_name(n_samples, uniform, age_bias)
+
     for file in df_files:
-        if f"N-{n_samples}" in file and f"{'_' if uniform else 'non-'}uniform" in file:
-            cprint(f"Found & load following file: {file} ...", 'b')
+        if f_suffix in file:
+            cprint(f"Found & loaded following file: {file} ...", 'b')
             return load_obj(name=file, folder=p2data)
             # return load_pumpkin_set(name=file)
 
