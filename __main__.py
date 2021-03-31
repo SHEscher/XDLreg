@@ -45,12 +45,12 @@ def get_args():
 
 def main():
     """
-    Run whole pipeline of:
-    1) creating a simulated dataset
+    Run the whole pipeline:
+    1) creating a simulated dataset,
     2) building and training a model (ConvNet) on that dataset, and
-    3) analyzing the model predictions with the LRP algorithm.
+    3) analyzing the continuous model predictions (regression) with the LRP algorithm.
     """
-    print(f"Execute __main__.py in {__file__}\n")
+    print(f"Execute {__file__}:main\n")
     run_simulation(**vars(get_args()))
     end()
 

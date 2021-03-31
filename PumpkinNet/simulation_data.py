@@ -8,7 +8,8 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 
 import os
 import string
-from datetime import datetime
+import timeit
+from datetime import datetime, timedelta
 import concurrent.futures
 
 import numpy as np
@@ -347,6 +348,14 @@ class PumpkinSet:
         """
         try:
             cprint(f"Start creating the pumpkin dataset of {self.name} ...", 'b')
+            t = timeit.timeit(
+                stmt="PumpkinHead(np.random.randint(low=min_age, high=max_age+1))",
+                setup="from PumpkinNet.simulation_data import PumpkinHead, np, min_age, max_age",
+                number=3)/3  # approx. time to create one PumpkinHead
+            t_est = t * self.n_samples / os.cpu_count()  # estimated time to create whole dataset
+            cprint(f"Creating whole dataset will take about "
+                   f"{chop_microseconds(timedelta(seconds=t_est))} [h:m:s] ...", col='y')
+
             start_time = datetime.now()
             # Worker n_CPU * 2 works best
             with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count() * 2) as executor:

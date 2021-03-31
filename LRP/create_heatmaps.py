@@ -114,7 +114,7 @@ def plot_simulation_heatmaps(model_name: str, n_subjects: int = 20, subset: str 
         img = img[np.newaxis, ...]
         a = rel_obj[sub]
 
-        col_a = apply_colormap(R=a, inputimage=img.squeeze(), cintensifier=5., gamma=.2,
+        col_a = apply_colormap(robj=a, inputimage=img.squeeze(), cintensifier=5., gamma=.2,
                                true_scale=true_scale)
 
         sub_y = ydata[sub]
