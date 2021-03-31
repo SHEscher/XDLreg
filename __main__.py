@@ -19,14 +19,7 @@ from PumpkinNet.run_simulation import run_simulation
 
 # %% Run simulation when main is called << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-def main(**kwargs):
-    print(f"\nExecute __main__.py in {__file__}\n")  # TODO temporary
-    print(kwargs)
-    run_simulation(**kwargs)
-    end()
-
-
-if __name__ == "__main__":
+def get_args():
 
     parser = argparse.ArgumentParser(description="Arguments relevant for model training & heatmap plots.")
     # TODO consider adding project path
@@ -44,6 +37,18 @@ if __name__ == "__main__":
 
     FLAGS, unparsed = parser.parse_known_args()
 
-    main(**vars(FLAGS))
+    return FLAGS
+
+
+def main():
+
+    print(f"\nExecute __main__.py in {__file__}\n")  # TODO temporary
+    print(get_args())
+    run_simulation(**vars(get_args()))
+    end()
+
+
+if __name__ == "__main__":
+    main()
 
 # <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END

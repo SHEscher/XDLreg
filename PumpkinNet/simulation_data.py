@@ -202,7 +202,7 @@ class PumpkinHead:
 # %% Create dataset << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
 def generate_set_name(n_samples, uniform, age_bias):
-    if uniform:
+    if not uniform:
         assert age_bias is not None, "For non-uniform datasets, age_bias must be provided."
     return f"N-{n_samples}_{'' if uniform else 'non-'}uniform" + ("" if uniform else f"{age_bias:.1f}")
 
