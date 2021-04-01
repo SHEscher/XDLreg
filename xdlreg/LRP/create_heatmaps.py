@@ -29,7 +29,7 @@ p2relevance = os.path.join(p2results, "relevance")
 
 
 def create_relevance_dict(model_name: str, subset: str = "test",
-                          analyzer_type: str="lrp.sequential_preset_a", save: bool = True):
+                          analyzer_type: str = "lrp.sequential_preset_a", save: bool = True):
     """
     Compute relevance maps of given analyzer type (default is LRP) for a model and all subjects it was
     evaluated on.

@@ -22,12 +22,13 @@ setup(
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
+        # "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
     ],
     packages=find_packages(),
     include_package_data=True,
-    install_requires=["numpy", "matplotlib", "seaborn", "scikit-image", "Keras==2.2.4", "innvestigate"],
+    install_requires=["numpy==1.18.0", "matplotlib==3.3.4", "seaborn==0.11.1", "scikit-image==0.16.2",
+                      "Keras==2.2.4", "tensorflow==1.14.0rc1", "innvestigate==1.0.8"],
     entry_points={
         "console_scripts": [
             "xdlreg=xdlreg.__main__:main",
