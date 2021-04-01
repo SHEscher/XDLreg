@@ -60,9 +60,9 @@ from xdlreg.run_simulation import run_simulation
 run_simulation(path=YOUR_PATH, n_samples=N_SAMPLES, uniform=TRUE/FALSE, target_bias=TARGET_BIAS, epochs=N_EPOCHS, plot_n_heatmaps=N_HEATMAPS_TO_PLOT)
 
 ```
-2. Or via a shell (all *flags* are optional):
+2. Or via a console (all *flags* are optional):
 
-```sh
+```console
 xdlreg /
   --path YOUR_PATH /
   --n_samples N_SAMPLES /
@@ -72,7 +72,7 @@ xdlreg /
   --plot_n_heatmaps
 ```
 For and more information on each FLAG, type:
-```sh
+```console
 xdlreg -h
 ```
 
