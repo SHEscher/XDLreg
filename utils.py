@@ -20,169 +20,7 @@ import numpy as np
 
 # %% OS & Paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
-class DisplayablePath(object):
-    """
-    With honourable mention to 'abstrus':
-    https://stackoverflow.com/questions/9727673/list-directory-tree-structure-in-python
-
-    Notes
-        * This uses recursion. It will raise a RecursionError on really deep folder trees
-        * The tree is lazily evaluated. It should behave well on really wide folder trees.
-          Immediate children of a given folder are not lazily evaluated, though.
-    """
-
-    display_filename_prefix_middle = '├──'
-    display_filename_prefix_last = '└──'
-    display_parent_prefix_middle = '    '
-    display_parent_prefix_last = '│   '
-
-    def __init__(self, path, parent_path, is_last):
-        self.path = Path(str(path))
-        self.parent = parent_path
-        self.is_last = is_last
-        if self.parent:
-            self.depth = self.parent.depth + 1
-        else:
-            self.depth = 0
-
-    @property
-    def displayname(self):
-        if self.path.is_dir():
-            return self.path.name + '/'
-        return self.path.name
-
-    @classmethod
-    def make_tree(cls, root, parent=None, is_last=False, criteria=None):
-        root = Path(str(root))
-        criteria = criteria or cls._default_criteria
-
-        displayable_root = cls(root, parent, is_last)
-        yield displayable_root
-
-        children = sorted(list(path
-                               for path in root.iterdir()
-                               if criteria(path)),
-                          key=lambda s: str(s).lower())
-        count = 1
-        for path in children:
-            is_last = count == len(children)
-            if path.is_dir():
-                yield from cls.make_tree(path,
-                                         parent=displayable_root,
-                                         is_last=is_last,
-                                         criteria=criteria)
-            else:
-                yield cls(path, displayable_root, is_last)
-            count += 1
-
-    @classmethod
-    def _default_criteria(cls, path):
-        return True
-
-    @property
-    def displayname(self):
-        if self.path.is_dir():
-            return self.path.name + '/'
-        return self.path.name
-
-    def displayable(self):
-        if self.parent is None:
-            return self.displayname
-
-        _filename_prefix = (self.display_filename_prefix_last
-                            if self.is_last
-                            else self.display_filename_prefix_middle)
-
-        parts = ['{!s} {!s}'.format(_filename_prefix,
-                                    self.displayname)]
-
-        parent = self.parent
-        while parent and parent.parent is not None:
-            parts.append(self.display_parent_prefix_middle
-                         if parent.is_last
-                         else self.display_parent_prefix_last)
-            parent = parent.parent
-
-        return ''.join(reversed(parts))
-
-
-def tree(directory):
-    """
-    Use the same way as shell command `tree`.
-    This leads to output such as:
-
-        directory/
-        ├── _static/
-        │   ├── embedded/
-        │   │   ├── deep_file
-        │   │   └── very/
-        │   │       └── deep/
-        │   │           └── folder/
-        │   │               └── very_deep_file
-        │   └── less_deep_file
-        ├── about.rst
-        ├── conf.py
-        └── index.rst
-
-    """
-    paths = DisplayablePath.make_tree(Path(directory))
-    for path in paths:
-        print(path.displayable())
-
-
-def find(fname, folder=".", typ="file",
-         exclusive=True, fullname=True, abs_path=False, verbose=True):
-    """
-    Find file(s) in given folder
-
-    :param fname: full filename OR consecutive part of it
-    :param folder: root folder to search
-    :param typ: 'file' or folder 'dir'
-    :param exclusive: only return path when only one file was found
-    :param fullname: True: consider only files which exactly match the given fname
-    :param abs_path: False: return relative path(s); True: return absolute path(s)
-    :param verbose: Report findings
-
-    :return: path to file OR list of paths, OR None
-    """
-
-    ctn_found = 0
-    findings = []
-    for root, dirs, files in os.walk(folder):
-        search_in = files if typ.lower() == "file" else dirs
-        for f in search_in:
-            if (fname == f) if fullname else (fname in f):
-                ffile = os.path.join(root, f)  # found file
-
-                if abs_path:
-                    ffile = os.path.abspath(ffile)
-
-                findings.append(ffile)
-                ctn_found += 1
-
-    if exclusive and len(findings) > 1:
-        if verbose:
-            cprint(f"\nFound several {typ}s for given fname='{fname}', please specify:", 'y')
-            print("", *findings, sep="\n\t>> ")
-        return None
-
-    elif not exclusive and len(findings) > 1:
-        if verbose:
-            cprint(f"\nFound several {typ}s for given fname='{fname}', return list of {typ} paths", 'y')
-        return findings
-
-    elif len(findings) == 0:
-        if verbose:
-            cprint(f"\nDid not find any {typ} for given fname='{fname}', return None", 'y')
-        return None
-
-    else:
-        if verbose:
-            cprint(f"\nFound this {typ}: '{findings[0]}'", 'y')
-        return findings[0]
-
-
-def open_folder(path):
+def open_folder(path: str):
     """Open specific folder in Finder. Can also be a file"""
     if platform.system() == "Windows":  # for Windows
         os.startfile(path)
@@ -208,7 +46,7 @@ def browse_files(initialdir=None, filetypes=None):
     return filename
 
 
-def delete_dir_and_files(parent_path):
+def delete_dir_and_files(parent_path: str):
     """
     Delete given folder and all subfolders and files.
 
@@ -247,6 +85,7 @@ def delete_dir_and_files(parent_path):
 # %% Timer << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
 def chop_microseconds(delta):
+    """Reomve micro-seconds from timedelta object."""
     return delta - timedelta(microseconds=delta.microseconds)
 
 
@@ -270,7 +109,7 @@ def function_timed(dry_funct=None, ms=None):
 
     :param dry_funct: parameter can be ignored. Results in output without micro-seconds
     :param ms: if micro-seconds should be printed, set to True
-    :return:
+    :return: timed function output
     """
 
     def _function_timed(funct):
@@ -304,7 +143,8 @@ def function_timed(dry_funct=None, ms=None):
     return _function_timed
 
 
-def loop_timer(start_time, loop_length, loop_idx, loop_name: str = None, add_daytime=False):
+def loop_timer(start_time: datetime, loop_length: int, loop_idx: int, loop_name: str = None,
+               add_daytime: bool = False):
     """
     Estimates remaining time to run through given loop.
     Function must be placed at the end of the loop inside.
@@ -389,7 +229,7 @@ def denormalize(array, denorm_minmax, norm_minmax):
 
 def z_score(array):
     """
-    Create z-score
+    Create z-scored array.
     :return: z-score array
     """
     sub_mean = np.nanmean(array)
@@ -400,6 +240,13 @@ def z_score(array):
 
 
 def getfactors(n):
+    """
+    Find all factors of given number.
+    For instance:
+        getfactors(7) -> [1, 7]  # prime
+        getfactors(8) -> [1, 2, 4, 8]
+    :return: list of factors of given number
+    """
     # Create an empty list for factors
     factors = []
 
@@ -413,14 +260,14 @@ def getfactors(n):
 
 
 def oom(number):
-    """Return order of magnitude of given number"""
+    """Return order of magnitude of given number."""
     return floor(log(number, 10))
 
 
-# %% Sorter << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
+# %% Plotting << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><
 
 def get_n_cols_and_rows(n_plots, squary=True):
-    """Define figure grid-size: with rpl x cpl cells """
+    """Define figure grid-size: with rpl x cpl cells."""
     facs = getfactors(n_plots)
     if len(facs) <= 2 or squary:  # prime or squary
         rpl = 1
@@ -503,14 +350,13 @@ class Bcolors:
             'ul': UNDERLINE, 'bo': BOLD}
 
 
-def cprint(string, col=None, fm=None, ts=False):
+def cprint(string: str, col: str = None, fm: str = None, ts: bool = False):
     """
-    Colorize and format print-out. Add leading time-stamp (fs) if required
+    Colorize and format print-out. Add leading time-stamp (ts) if required
     :param string: print message
     :param col: color:'p'(ink), 'b'(lue), 'g'(reen), 'y'(ellow), OR 'r'(ed)
     :param fm: format: 'ul'(:underline) OR 'bo'(:bold)
     :param ts: add leading time-stamp
-    :return:
     """
 
     if col:
@@ -533,11 +379,10 @@ def cprint(string, col=None, fm=None, ts=False):
 
     # print given string with formatting
     print(f"{col if col else ''}{fm if fm else ''}{string}{Bcolors.ENDC}")
-    # print("{}{}".format(col if col else "",
-    #                     fm if fm else "") + string + Bcolors.ENDC)
 
 
-def cinput(string, col=None):
+def cinput(string: str, col: str =None):
+    """Colorize user input request."""
     if col:
         col = col[0].lower()
         assert col in ['p', 'b', 'g', 'y', 'r'], \
@@ -545,17 +390,18 @@ def cinput(string, col=None):
         col = Bcolors.DICT[col]
 
     # input(given string) with formatting
-    return input("{}".format(col if col else "") + string + Bcolors.ENDC)
+    return input(f"{col if col else ''}" + string + Bcolors.ENDC)
 
 
 def true_false_request(func):
+    """Decorate function with True/False request."""
     @wraps(func)
     def wrapper(*args, **kwargs):
-        func(*args, **kwargs)  # should be only a print command
+        func(*args, **kwargs)  # should be a print command only
 
         tof = input("(T)rue or (F)alse: ").lower()
         assert tof in ["true", "false", "t", "f"], "Must be 'T', 't' or 'T/true', or 'F', 'f', 'F/false'"
-        output = True if tof in "true" else False
+        output = tof in "true"
 
         return output
 
@@ -563,7 +409,7 @@ def true_false_request(func):
 
 
 @true_false_request
-def ask_true_false(question, col="b"):
+def ask_true_false(question: str, col: str = "b"):
     """
     Ask user for input for given True-or-False question
     :param question: str
@@ -573,19 +419,10 @@ def ask_true_false(question, col="b"):
     cprint(question, col)
 
 
-def str2bool(v):
-    if isinstance(v, bool):
-       return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
-
 # %% Save objects externally & load them << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
 def save_obj(obj, name, folder='./TEMP/', hp=True, as_zip=False):
+    """Save given object on disk."""
 
     # Remove suffix here, if there is e.g. "*.gz.pkl":
     if name.endswith(".gz"):
@@ -612,6 +449,7 @@ def save_obj(obj, name, folder='./TEMP/', hp=True, as_zip=False):
 
 
 def load_obj(name, folder='./TEMP/'):
+    """Load given object from disk."""
 
     if not (name.endswith(".pkl") or name.endswith(".pkl.gz")):
         name += ".pkl"

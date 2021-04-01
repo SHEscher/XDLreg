@@ -13,11 +13,23 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 
 # %% Import
 import argparse
-from utils import str2bool, end
+from utils import end
 from PumpkinNet.run_simulation import run_simulation
 
 
 # %% Run simulation when main is called << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
+
+def str2bool(v):
+    """Convert bool-like string into bool."""
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 def get_args():
     """
