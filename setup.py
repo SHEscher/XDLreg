@@ -28,7 +28,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=["numpy==1.18.0", "matplotlib==3.3.4", "seaborn==0.11.1", "scikit-image==0.16.2",
-                      "Keras==2.2.4", "tensorflow==1.14.0rc1", "innvestigate==1.0.8"],
+                      "h5py==2.10.0", "Keras==2.2.4", "tensorflow==1.14.0rc1", "innvestigate==1.0.8"],
     entry_points={
         "console_scripts": [
             "xdlreg=xdlreg.__main__:main",

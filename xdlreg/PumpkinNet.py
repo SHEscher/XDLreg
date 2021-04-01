@@ -14,11 +14,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from xdlreg.utils import cprint, p2results, browse_files, function_timed
+from xdlreg import utils
+from xdlreg.utils import cprint, browse_files, function_timed
 from xdlreg.SimulationData import split_simulation_data, get_pumpkin_set
 
 
 # %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
+p2results = os.path.join(utils.root_path, "Results")
 p2models = os.path.join(p2results, "model")
 
 

@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from skimage import draw
 
-from xdlreg.utils import (root_path, cprint, chop_microseconds, save_obj, load_obj, loop_timer,
-                          function_timed)
+from xdlreg import utils
+from xdlreg.utils import (cprint, chop_microseconds, save_obj, load_obj, loop_timer, function_timed)
 
 # %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
 
@@ -27,7 +27,7 @@ max_age = 80
 min_age = 20  # OR, e.g., min_age=4 for developmental factors (here: size of head)
 
 # Set paths
-p2data = os.path.join(root_path, "Data")
+p2data = os.path.join(utils.root_path, "Data")
 
 
 # %% Create image data ("Pumpkins") << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>

@@ -6,6 +6,7 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 
 # %% Import
 import os
+from xdlreg import utils
 from xdlreg.utils import cprint, open_folder
 from xdlreg.PumpkinNet import train_simulation_model
 from xdlreg.SimulationData import get_pumpkin_set
@@ -14,14 +15,19 @@ from xdlreg.LRP.create_heatmaps import create_relevance_dict, plot_simulation_he
 
 # %% Run simulation << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-def run_simulation(n_samples=2000, uniform=True, target_bias=None, epochs=80, plot_n_heatmaps=20):
+
+def run_simulation(path: str = None, n_samples: int = 2000, uniform: bool = True,
+                   target_bias: float = None, epochs: int = 80, plot_n_heatmaps: int = 20):
 
     cprint(f"Run simulation on {n_samples} samples:\n", col="b", fm="bo")
 
+    # Set root path
+    utils.root_path = path if path is not None else utils.root_path
+
     # Create data and train model
     cprint(f"Train PumpkinNet:\n", col="b", fm="bo")
-    model_name = train_simulation_model(pumpkin_set=get_pumpkin_set(n_samples=n_samples, uniform=uniform,
-                                                                    age_bias=target_bias), epochs=epochs)
+    model_name = train_simulation_model(pumpkin_set=get_pumpkin_set(
+        n_samples=n_samples, uniform=uniform, age_bias=target_bias), epochs=epochs)
 
     # Create relevance maps via LRP
     cprint(f"\nCreate relevance maps (LRP) for {model_name}:\n", col="p", fm="bo")

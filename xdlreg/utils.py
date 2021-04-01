@@ -477,13 +477,7 @@ def end():
 # %% Config project paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
 # TODO check whether necessary
-root_path = "XDLreg"
-
-if os.getcwd() not in sys.path:
-    sys.path.append(os.getcwd())
-root_path = list(filter(lambda x: root_path in x, sys.path))[0].split(root_path)[0] + root_path
-
-p2data = os.path.join(root_path, "Data")
-p2results = os.path.join(root_path, "Results")
+global root_path
+root_path = os.getcwd()
 
 # <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END

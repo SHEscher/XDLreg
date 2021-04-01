@@ -12,6 +12,7 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 # pip install -e ./XDLreg  # install as module
 
 # %% Import
+import os
 import argparse
 from xdlreg.utils import end
 from xdlreg.run_simulation import run_simulation
@@ -38,6 +39,8 @@ def get_args():
     """
     parser = argparse.ArgumentParser(description="Arguments relevant for model training & heatmap plots.")
     # TODO consider adding project path
+    parser.add_argument('--path', type=str, default=os.getcwd(),
+                        help='Number of samples in simulated dataset.')
     parser.add_argument('--n_samples', type=int, default=2000,
                         help='Number of samples in simulated dataset.')
     parser.add_argument('--uniform', type=str2bool, default=True,
@@ -62,6 +65,7 @@ def main():
     2) building and training a model (ConvNet) on that dataset, and
     3) analyzing the continuous model predictions (regression) with the LRP algorithm.
     """
+
     print(f"Execute {__file__}:main\n")
     run_simulation(**vars(get_args()))
     end()

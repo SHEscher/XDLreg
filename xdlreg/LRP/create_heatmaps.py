@@ -15,13 +15,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import innvestigate
 
-from xdlreg.utils import p2results, save_obj, load_obj
+from xdlreg import utils
+from xdlreg.utils import save_obj, load_obj
 from xdlreg.SimulationData import split_simulation_data
 from xdlreg.PumpkinNet import load_trained_model, get_model_data, is_binary_classification
 from xdlreg.LRP.apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
 
 
 # %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
+p2results = os.path.join(utils.root_path, "Results")
 p2relevance = os.path.join(p2results, "relevance")
 
 
