@@ -298,7 +298,8 @@ class PumpkinSet:
         plt.figure(f"Age distribution in {self.name}", figsize=(6, 4), dpi=150)
         h = sns.histplot(self.age_distribution, binwidth=1, kde=True, color="cadetblue", alpha=.5)
         ymax = int(h.axes.get_ylim()[-1] * .9)
-        plt.vlines(x=30.5, ymin=0, ymax=ymax, colors="red", ls="dotted", label="age-bias")
+        if self.age_bias is not None:
+            plt.vlines(x=self.age_bias, ymin=0, ymax=ymax, colors="red", ls="dotted", label="age-bias")
         plt.vlines(np.mean(self.age_distribution), ymin=0, ymax=ymax, colors="orange", ls="dashed",
                    label="mean")
         plt.vlines(np.median(self.age_distribution), ymin=0, ymax=ymax, colors="green", ls="dashed",

@@ -76,8 +76,8 @@ For and more information on each FLAG, type:
 xdlreg -h
 ```
 
-## Subanalysis
-The subfolder `Subanalysis/`  contains mainly jupyter notebooks for sub-analyses.
+## Jupyter notebooks
+The folder `jupyter notebooks/` contains a notebook for exploration of the functionality of this project.
 
 ## Cite
 
