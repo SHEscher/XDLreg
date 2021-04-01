@@ -352,7 +352,7 @@ class PumpkinSet:
 
             t = timeit.timeit(
                 stmt="PumpkinHead(np.random.randint(low=min_age, high=max_age+1))",
-                setup="from PumpkinNet.simulation_data import PumpkinHead, np, min_age, max_age",
+                setup="from xdlreg.SimulationData import PumpkinHead, np, min_age, max_age",
                 number=3)/3  # approx. time to create one PumpkinHead
             # Estimated time to create dataset
             t_est = (t * self.n_samples) / (os.cpu_count()*0.99)  # .99 = factor to start process
@@ -368,7 +368,8 @@ class PumpkinSet:
                    f"{chop_microseconds(datetime.now() - start_time)} [hh:min:sec].", 'b')
 
         except Exception as e:
-            print(e)  # TESTING
+            # print(e)  # print for testing
+            cprint("Parallel processing failed. Use loop instead ...", col='r')
             start_time = datetime.now()
             for i, age in enumerate(self.age_distribution):
                 self._data[i] = PumpkinHead(age=age)
