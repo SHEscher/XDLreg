@@ -28,7 +28,7 @@ Here, the LRP will be applied on the `PumpkinNet` extracting pixels in the simul
 ## Setup
 It is recommended to use a new virtual environment `virtualenv` for installing and running the pipeline.
 
-```shell
+```console
 # Create virtual environment
 virtualenv --python=/PATH/TO/PYTHON3.7 /PATH/TO/VENV_DIR
 
@@ -41,7 +41,7 @@ cd YOUR_PATH
 ```
 
 Installing goes via
-```shell
+```console
 # after downloading/cloning the repository
 pip install PATH/TO/XDLreg
 
@@ -62,7 +62,7 @@ run_simulation(path=YOUR_PATH, n_samples=N_SAMPLES, uniform=TRUE/FALSE, target_b
 ```
 2. Or via a shell (all *flags* are optional):
 
-```shell
+```console
 xdlreg /
   --path YOUR_PATH /
   --n_samples N_SAMPLES /
@@ -72,7 +72,7 @@ xdlreg /
   --plot_n_heatmaps
 ```
 For and more information on each FLAG, type:
-```shell
+```console
 xdlreg -h
 ```
 
