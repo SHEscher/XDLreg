@@ -62,7 +62,7 @@ run_simulation(path=YOUR_PATH, n_samples=N_SAMPLES, uniform=TRUE/FALSE, target_b
 ```
 2. Or via a shell (all *flags* are optional):
 
-```console
+```sh
 xdlreg /
   --path YOUR_PATH /
   --n_samples N_SAMPLES /
@@ -72,7 +72,7 @@ xdlreg /
   --plot_n_heatmaps
 ```
 For and more information on each FLAG, type:
-```console
+```sh
 xdlreg -h
 ```
 
