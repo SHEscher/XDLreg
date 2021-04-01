@@ -17,7 +17,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from skimage import draw
 
-from utils import root_path, cprint, chop_microseconds, save_obj, load_obj, loop_timer, function_timed
+from xdlreg.utils import (root_path, cprint, chop_microseconds, save_obj, load_obj, loop_timer,
+                          function_timed)
 
 # %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
 
@@ -348,6 +349,7 @@ class PumpkinSet:
         """
         try:
             cprint(f"Start creating the pumpkin dataset of {self.name} ...", 'b')
+
             t = timeit.timeit(
                 stmt="PumpkinHead(np.random.randint(low=min_age, high=max_age+1))",
                 setup="from PumpkinNet.simulation_data import PumpkinHead, np, min_age, max_age",
@@ -366,7 +368,7 @@ class PumpkinSet:
                    f"{chop_microseconds(datetime.now() - start_time)} [hh:min:sec].", 'b')
 
         except Exception as e:
-            # print(e)
+            print(e)  # TESTING
             start_time = datetime.now()
             for i, age in enumerate(self.age_distribution):
                 self._data[i] = PumpkinHead(age=age)

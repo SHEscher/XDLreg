@@ -6,10 +6,10 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 
 # %% Import
 import os
-from utils import cprint, open_folder
-from PumpkinNet.pumpkinnet import train_simulation_model
-from PumpkinNet.simulation_data import get_pumpkin_set
-from LRP.create_heatmaps import create_relevance_dict, plot_simulation_heatmaps, p2relevance
+from xdlreg.utils import cprint, open_folder
+from xdlreg.PumpkinNet import train_simulation_model
+from xdlreg.SimulationData import get_pumpkin_set
+from xdlreg.LRP.create_heatmaps import create_relevance_dict, plot_simulation_heatmaps, p2relevance
 
 
 # %% Run simulation << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<

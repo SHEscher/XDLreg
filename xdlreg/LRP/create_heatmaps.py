@@ -15,10 +15,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import innvestigate
 
-from utils import p2results, save_obj, load_obj
-from PumpkinNet.simulation_data import get_pumpkin_set, split_simulation_data
-from PumpkinNet.pumpkinnet import load_trained_model, get_model_data, is_binary_classification
-from LRP.apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
+from xdlreg.utils import p2results, save_obj, load_obj
+from xdlreg.SimulationData import split_simulation_data
+from xdlreg.PumpkinNet import load_trained_model, get_model_data, is_binary_classification
+from xdlreg.LRP.apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
 
 
 # %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>

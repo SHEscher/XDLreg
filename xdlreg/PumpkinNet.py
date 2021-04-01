@@ -14,8 +14,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from utils import cprint, p2results, browse_files, function_timed
-from PumpkinNet.simulation_data import split_simulation_data, get_pumpkin_set
+from xdlreg.utils import cprint, p2results, browse_files, function_timed
+from xdlreg.SimulationData import split_simulation_data, get_pumpkin_set
 
 
 # %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>

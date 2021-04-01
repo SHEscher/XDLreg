@@ -13,8 +13,8 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 
 # %% Import
 import argparse
-from utils import end
-from PumpkinNet.run_simulation import run_simulation
+from xdlreg.utils import end
+from xdlreg.run_simulation import run_simulation
 
 
 # %% Run simulation when main is called << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<

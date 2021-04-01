@@ -7,8 +7,8 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 """
 # %% Import
 from matplotlib.colors import LinearSegmentedColormap
-from utils import cprint, normalize
 import numpy as np
+from xdlreg.utils import cprint, normalize
 
 
 # %% Create colored heatmap ><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
