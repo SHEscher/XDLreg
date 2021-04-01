@@ -4,7 +4,7 @@
 
 `[Last update: 2021-04-01]`
 
-<img src="Pumpkin.jpg" alt="PumpkinNet" width="350">
+<img src="Pumpkin.png" alt="PumpkinNet" width="350">
 
 [![Python.pm](https://img.shields.io/badge/python-3.7-brightgreen.svg?maxAge=259200)](#) [![version](https://img.shields.io/badge/version-1.0.0-yellow.svg?maxAge=259200)](#)
 
