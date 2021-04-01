@@ -30,7 +30,7 @@ setup(
     install_requires=["numpy", "matplotlib", "seaborn", "scikit-image", "Keras==2.2.4", "innvestigate"],
     entry_points={
         "console_scripts": [
-            "xdlreg=XDLreg.__main__:main",
+            "xdlreg=xdlreg.__main__:main",
         ]
     },
 )
