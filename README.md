@@ -9,21 +9,21 @@
 [![Python.pm](https://img.shields.io/badge/python-3.7-brightgreen.svg?maxAge=259200)](#) [![version](https://img.shields.io/badge/version-1.0.0-yellow.svg?maxAge=259200)](#)
 
 ## xdlreg
-`./xdlreg/` contains the project code.
+`xdlreg/` contains the project code.
 
 ### PumpkinNet
-`./xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al., 2021](DOI), which was trained on 3D-MRIs.
+`xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al., 2021](DOI), which was trained on 3D-MRIs.
 
 ### Pumpkin dataset
-`./xdlreg/SimulationData.py` is the code for the simulation of 2D-images of *pumpkin heads*. Ageing ist simulated in form of added *atrophies* and *lesions*.
+`xdlreg/SimulationData.py` is the code for the simulation of 2D-images of *pumpkin heads*. Ageing ist simulated in form of added *atrophies* and *lesions*.
 
 ### LRP analysis
-In `./xdlreg/LRP/` one can find the implementation of the *Layer-wise relevance propagation algorithm* (LRP), which highlights information in the input space being relevant for the given model prediction. <br>
+In `xdlreg/LRP/` one can find the implementation of the *Layer-wise relevance propagation algorithm* (LRP), which highlights information in the input space being relevant for the given model prediction. <br>
 Here, the LRP will be applied on the `PumpkinNet` extracting pixels in the simulated images that were relevant for the model prediction.
 
-`./xdlreg/LRP/create_heatmaps.py` contains functions to create relevance objects. That is, per sample the script can analyse the model prediction.
+`xdlreg/LRP/create_heatmaps.py` contains functions to create relevance objects. That is, per sample the script can analyse the model prediction.
 
-`./xdlreg/LRP/apply_heatmap.py` contains functions for visualising LRP heatmaps.
+`xdlreg/LRP/apply_heatmap.py` contains functions for visualising LRP heatmaps.
 
 ## Setup
 It is recommended to use a new virtual environment `virtualenv` for installing and running the pipeline.
@@ -46,7 +46,7 @@ Installing goes via
 pip install PATH/TO/XDLreg
 
 # OR
-pip install github.ADDRESS
+pip install GITHUB_ADDRESS
 ```
 
 ## Get started
@@ -77,7 +77,7 @@ xdlreg -h
 ```
 
 ## Subanalysis
-The subfolder `./Subanalysis/`  contains mainly jupyter notebooks for sub-analyses.
+The subfolder `Subanalysis/`  contains mainly jupyter notebooks for sub-analyses.
 
 ## Cite
 
