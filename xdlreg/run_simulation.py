@@ -22,7 +22,7 @@ def run_simulation(path: str = None, n_samples: int = 2000, uniform: bool = True
     cprint(f"Run simulation on {n_samples} samples:\n", col="b", fm="bo")
 
     # Set root path
-    utils.root_path = path if path is not None else utils.root_path
+    utils.root_path = os.path.abspath(path) if path is not None else utils.root_path
 
     # Create data and train model
     cprint(f"Train PumpkinNet:\n", col="b", fm="bo")
