@@ -26,8 +26,10 @@ from xdlreg.utils import (cprint, chop_microseconds, save_obj, load_obj, loop_ti
 max_age = 80
 min_age = 20  # OR, e.g., min_age=4 for developmental factors (here: size of head)
 
-# Set paths
-p2data = os.path.join(utils.root_path, "Data")
+
+# Set Paths
+def p2data():
+    return os.path.join(utils.root_path, "Data")
 
 
 # %% Create image data ("Pumpkins") << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
@@ -222,7 +224,7 @@ class PumpkinHead:
 
 # %% Create dataset << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-def generate_set_name(n_samples: int, uniform: str, age_bias) -> str:
+def generate_set_name(n_samples: int, uniform: bool, age_bias) -> str:
     """
     Generate the name of a simulated dataset as function of given arguments.
     :param n_samples: number of samples in dataset
@@ -255,7 +257,7 @@ class PumpkinSet:
         self._draw_sample_distribution(uniform=uniform, age_bias=age_bias, skew_factor=skew_factor)
         self._data = [None] * n_samples
         self._name = datetime.now().strftime('%Y-%m-%d_%H-%M_') + generate_set_name(n_samples, uniform,
-                                                                                   age_bias)
+                                                                                    age_bias)
         self._generate_data()
         if save:
             self.save()
@@ -378,9 +380,9 @@ class PumpkinSet:
 
     def save(self) -> None:
         """Save this instance of PumpkinSet (self) externally."""
-        if not os.path.exists(p2data):
-            os.mkdir(p2data)
-        save_obj(obj=self, name=self.name, folder=p2data)
+        if not os.path.exists(p2data()):
+            os.makedirs(p2data())
+        save_obj(obj=self, name=self.name, folder=p2data())
 
     def data2numpy(self, for_keras: bool = True):
         """
@@ -412,13 +414,13 @@ def get_pumpkin_set(n_samples: int = 2000, uniform: bool = True, age_bias: float
     """
     assert n_samples >= 100, "Simulated dataset can't be smaller than a 100 samples."
 
-    df_files = os.listdir(p2data) if os.path.exists(p2data) else []
+    df_files = os.listdir(p2data()) if os.path.exists(p2data()) else []
     f_suffix = generate_set_name(n_samples, uniform, age_bias)
 
     for file in df_files:
         if f_suffix in file:
             cprint(f"Found & loaded following file: {file} ...", 'b')
-            return load_obj(name=file, folder=p2data)
+            return load_obj(name=file, folder=p2data())
             # return load_pumpkin_set(name=file)
 
     else:

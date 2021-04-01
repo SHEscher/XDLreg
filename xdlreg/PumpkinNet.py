@@ -19,9 +19,10 @@ from xdlreg.utils import cprint, browse_files, function_timed
 from xdlreg.SimulationData import split_simulation_data, get_pumpkin_set
 
 
-# %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
-p2results = os.path.join(utils.root_path, "Results")
-p2models = os.path.join(p2results, "model")
+# %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
+
+def p2models():
+    return os.path.join(utils.root_path, "Results/model")
 
 
 # %% ConvNet << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
@@ -127,10 +128,11 @@ def plot_training_process(_model):
     Plot the training process of given model.
     :param _model: model
     """
-    history_file = f"{p2models}/{_model.name}/{_model.name}_history.npy"
+
+    history_file = f"{p2models()}/{_model.name}/{_model.name}_history.npy"
     if os.path.isfile(history_file) and not os.path.isfile(history_file.replace(".npy", ".png")):
         _binary_cls = is_binary_classification(_model.name)
-        model_history = np.load(f"{p2models}/{_model.name}/{_model.name}_history.npy", allow_pickle=True).item()
+        model_history = np.load(f"{p2models()}/{_model.name}/{_model.name}_history.npy", allow_pickle=True).item()
         fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(14, 6))
         fig.suptitle(f"{_model.name}")
         ax1.plot(model_history['acc' if _binary_cls else 'mean_absolute_error'])
@@ -191,7 +193,7 @@ def plot_prediction(_model, xdata, ydata):
                           annot_kws={"size": 16})  # "ha": 'center', "va": 'center'})
         _ax.set_ylim([0, 2])  # labelling is off otherwise, OR downgrade to matplotlib==3.1.0
 
-        plot_path = os.path.join(p2models, _model.name,
+        plot_path = os.path.join(p2models(), _model.name,
                                  f"{_model.name}_confusion-matrix_(acc={accuracy:.2f}).png")
         _fig.savefig(plot_path)
         plt.close()
@@ -202,7 +204,7 @@ def plot_prediction(_model, xdata, ydata):
         mae = np.absolute(ydata - m_pred[:, 0]).mean()
 
         # # Jointplot
-        plot_path = os.path.join(p2models, _model.name,
+        plot_path = os.path.join(p2models(), _model.name,
                                  f"{_model.name}_predictions_MAE={mae:.2f}.png")
 
         sns.jointplot(x=m_pred[:, 0], y=ydata, kind="reg", height=10,
@@ -222,7 +224,7 @@ def plot_prediction(_model, xdata, ydata):
         plt.close()
 
         # # Residuals
-        plot_path = os.path.join(p2models, _model.name,
+        plot_path = os.path.join(p2models(), _model.name,
                                  f"{_model.name}_residuals_MAE={mae:.2f}.png")
 
         _fig = plt.figure(f"{_target.title()} Prediction Model Residuals MAE={mae:.2f}",
@@ -257,6 +259,7 @@ def train_simulation_model(pumpkin_set: classmethod, epochs: int = 80, batch_siz
     :param batch_size: size of batch
     :return: name of model
     """
+
     # Prep data for model
     xdata, ydata = pumpkin_set.data2numpy(for_keras=True)
     x_train, x_val, x_test, y_train, y_val, y_test = split_simulation_data(xdata=xdata, ydata=ydata,
@@ -267,19 +270,19 @@ def train_simulation_model(pumpkin_set: classmethod, epochs: int = 80, batch_siz
     model = create_simulation_model(name=_model_name, output_bias=np.mean(ydata))
 
     # Create folders
-    if not os.path.exists(os.path.join(p2models, model.name)):
-        os.makedirs(os.path.join(p2models, model.name))
+    if not os.path.exists(os.path.join(p2models(), model.name)):
+        os.makedirs(os.path.join(p2models(), model.name))
 
     # # Save model progress (callbacks)
     # See also: https://www.tensorflow.org/tutorials/keras/save_and_load
     callbacks = [keras.callbacks.ModelCheckpoint(
-        filepath=f"{p2models}/{model.name}/{model.name}" + "_{epoch}.h5",
+        filepath=f"{p2models()}/{model.name}/{model.name}" + "_{epoch}.h5",
         save_best_only=True,
         save_weights_only=False,
         period=10,
         monitor="val_loss",
         verbose=1),
-        keras.callbacks.TensorBoard(log_dir=f"{p2models}/{model.name}/")]
+        keras.callbacks.TensorBoard(log_dir=f"{p2models()}/{model.name}/")]
     # , keras.callbacks.EarlyStopping()]
 
     # # Train the model
@@ -292,11 +295,11 @@ def train_simulation_model(pumpkin_set: classmethod, epochs: int = 80, batch_siz
                         validation_data=(x_val, y_val))
 
     # Save final model (weights+architecture)
-    model.save(filepath=f"{p2models}/{model.name}/{model.name}_final.h5")  # HDF5 file
+    model.save(filepath=f"{p2models()}/{model.name}/{model.name}_final.h5")  # HDF5 file
 
     # Report training metrics
     # print('\nhistory dict:', history.history)
-    np.save(file=f"{p2models}/{model.name}/{model.name}_history", arr=history.history)
+    np.save(file=f"{p2models()}/{model.name}/{model.name}_history", arr=history.history)
 
     # # Evaluate the model on the test data
     cprint(f'\nEvaluate {model.name} on test data ...', 'b')
@@ -331,22 +334,23 @@ def load_trained_model(model_name: str = None):
     :param model_name: name of model, can be None: then browsing option will be opened.
     :return: trained model
     """
+
     if model_name:
-        if os.path.isdir(os.path.join(p2models, crop_model_name(model_name))):
+        if os.path.isdir(os.path.join(p2models(), crop_model_name(model_name))):
             # Load & return ensemble model
             # Load single model
             # e.g., 2020-01-13_14-05_MRIkerasNetAGE_MNI_BinClassi_final.h5
             if ".h5" not in model_name:
                 if "_final" not in model_name:
                     model_name += "_final.h5"
-            return keras.models.load_model(os.path.join(p2models,
+            return keras.models.load_model(os.path.join(p2models(),
                                                         crop_model_name(model_name),
                                                         model_name))
         else:
             cprint(f"No model directory found for given model '{model_name}'", col='r')
 
     else:
-        path2model = browse_files(p2models, "H5")
+        path2model = browse_files(p2models(), "H5")
         _model_name = path2model.split("/")[-1]
 
         return load_trained_model(model_name=_model_name)

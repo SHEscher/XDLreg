@@ -476,7 +476,6 @@ def end():
 
 # %% Config project paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-# TODO check whether necessary
 global root_path
 root_path = os.getcwd()
 

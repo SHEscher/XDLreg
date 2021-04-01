@@ -22,13 +22,13 @@ from xdlreg.PumpkinNet import load_trained_model, get_model_data, is_binary_clas
 from xdlreg.LRP.apply_heatmap import apply_colormap, create_cmap, gregoire_black_firered
 
 
-# %% Set global paths << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
-p2results = os.path.join(utils.root_path, "Results")
-p2relevance = os.path.join(p2results, "relevance")
+# %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
+
+def p2relevance():
+    return os.path.join(utils.root_path, "Results/relevance")
 
 
 # %% Create heatmaps & plots << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
-
 
 def create_relevance_dict(model_name: str, subset: str = "test",
                           analyzer_type: str = "lrp.sequential_preset_a", save: bool = True):
@@ -44,8 +44,9 @@ def create_relevance_dict(model_name: str, subset: str = "test",
     :param save: Whether to save dict externally, for quick access.
     :return:
     """
+
     try:
-        rel_obj = load_obj(name=f"relevance-maps_{subset}-set", folder=os.path.join(p2relevance,
+        rel_obj = load_obj(name=f"relevance-maps_{subset}-set", folder=os.path.join(p2relevance(),
                                                                                     model_name))
     except FileNotFoundError:
 
@@ -63,7 +64,7 @@ def create_relevance_dict(model_name: str, subset: str = "test",
         rel_obj = analyzer.analyze(xdata, neuron_selection=None).squeeze()
 
         if save:
-            save_obj(obj=rel_obj, name=f"relevance-maps_{subset}-set", folder=os.path.join(p2relevance,
+            save_obj(obj=rel_obj, name=f"relevance-maps_{subset}-set", folder=os.path.join(p2relevance(),
                                                                                            model_name))
 
     return rel_obj
@@ -136,7 +137,7 @@ def plot_simulation_heatmaps(model_name: str, n_subjects: int = 20, subset: str 
         plt.tight_layout()
 
         # Save plots
-        parent_dir = os.path.join(p2relevance, _model.name, "plots")
+        parent_dir = os.path.join(p2relevance(), _model.name, "plots")
         if not os.path.exists(parent_dir):
             os.makedirs(parent_dir)
         plt.savefig(os.path.join(parent_dir, f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}.{fm}"))
@@ -165,7 +166,7 @@ def plot_simulation_heatmaps(model_name: str, n_subjects: int = 20, subset: str 
             plt.tight_layout()
 
             # Save plots
-            parent_dir = os.path.join(p2relevance, _model.name, "plots")
+            parent_dir = os.path.join(p2relevance(), _model.name, "plots")
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
             plt.savefig(os.path.join(parent_dir,

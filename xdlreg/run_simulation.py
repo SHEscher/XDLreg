@@ -39,6 +39,6 @@ def run_simulation(path: str = None, n_samples: int = 2000, uniform: bool = True
                              pointers=True, true_scale=False)
 
     # Open folder with plots
-    open_folder(os.path.join(p2relevance, model_name, "plots"))
+    open_folder(os.path.join(p2relevance(), model_name, "plots"))
 
 # <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END
