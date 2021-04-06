@@ -5,7 +5,6 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 """
 
 # %% Imports
-import sys
 import os
 import pickle
 import platform

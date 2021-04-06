@@ -8,6 +8,8 @@ Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 
 import warnings
 warnings.filterwarnings("ignore", message=r"Passing", category=FutureWarning)  # primarily for tensorflow
+import tensorflow as tf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 import os
 import keras
 import numpy as np
@@ -123,16 +125,17 @@ def is_binary_classification(model_name: str) -> bool:
 
 # %% Plotting << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><
 
-def plot_training_process(_model):
+def plot_training_process(_model, save: bool = True):
     """
     Plot the training process of given model.
     :param _model: model
+    :param save: whether to save plot
     """
 
-    history_file = f"{p2models()}/{_model.name}/{_model.name}_history.npy"
-    if os.path.isfile(history_file) and not os.path.isfile(history_file.replace(".npy", ".png")):
+    history_fn = os.path.join(p2models(), _model.name, f"{_model.name}_history.npy")
+    if os.path.isfile(history_fn) and not os.path.isfile(history_fn.replace(".npy", ".png")):
         _binary_cls = is_binary_classification(_model.name)
-        model_history = np.load(f"{p2models()}/{_model.name}/{_model.name}_history.npy", allow_pickle=True).item()
+        model_history = np.load(history_fn, allow_pickle=True).item()
         fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(14, 6))
         fig.suptitle(f"{_model.name}")
         ax1.plot(model_history['acc' if _binary_cls else 'mean_absolute_error'])
@@ -149,16 +152,25 @@ def plot_training_process(_model):
         ax2.set_xlabel('training epoch')
         ax2.legend(['train', 'test'], loc='upper left')
         plt.tight_layout()
-        fig.savefig(history_file.replace(".npy", ".png"))
-        plt.close()
+        if save:
+            fig.savefig(history_fn.replace(".npy", ".png"))
+            plt.close()
+            return history_fn.replace(".npy", ".png")
+        else:
+            plt.show()
+    elif os.path.isfile(history_fn) and os.path.isfile(history_fn.replace(".npy", ".png")):
+        return history_fn.replace(".npy", ".png")
+    else:
+        cprint(f"No history file found for given model '{_model.name}'!", 'r')
 
 
-def plot_prediction(_model, xdata, ydata):
+def plot_prediction(_model, xdata, ydata, save: bool = True):
     """
     Plot predictions of model for given data.
     :param _model: model
     :param xdata: input data
     :param ydata: target variable
+    :param save: whether to save plot
     """
     _target = "age"
 
@@ -193,10 +205,8 @@ def plot_prediction(_model, xdata, ydata):
                           annot_kws={"size": 16})  # "ha": 'center', "va": 'center'})
         _ax.set_ylim([0, 2])  # labelling is off otherwise, OR downgrade to matplotlib==3.1.0
 
-        plot_path = os.path.join(p2models(), _model.name,
-                                 f"{_model.name}_confusion-matrix_(acc={accuracy:.2f}).png")
-        _fig.savefig(plot_path)
-        plt.close()
+        plot_paths = [os.path.join(p2models(), _model.name,
+                                   f"{_model.name}_confusion-matrix_(acc={accuracy:.2f}).png")]
 
     else:
         # # Get model predictions
@@ -204,8 +214,9 @@ def plot_prediction(_model, xdata, ydata):
         mae = np.absolute(ydata - m_pred[:, 0]).mean()
 
         # # Jointplot
-        plot_path = os.path.join(p2models(), _model.name,
-                                 f"{_model.name}_predictions_MAE={mae:.2f}.png")
+        plot_paths = []
+        plot_paths.append(os.path.join(p2models(), _model.name,
+                                       f"{_model.name}_predictions_MAE={mae:.2f}.png"))
 
         sns.jointplot(x=m_pred[:, 0], y=ydata, kind="reg", height=10,
                       marginal_kws=dict(bins=int(round((ydata.max() - ydata.min()) / 3))),
@@ -220,12 +231,15 @@ def plot_prediction(_model, xdata, ydata):
         plt.ylabel(f"Chronological {_target.lower()}", fontsize=20)
 
         plt.tight_layout()
-        plt.savefig(plot_path)  # Save plot
-        plt.close()
+        if save:
+            plt.savefig(plot_paths[0])  # Save plot
+            plt.close()
+        else:
+            plt.show()
 
         # # Residuals
-        plot_path = os.path.join(p2models(), _model.name,
-                                 f"{_model.name}_residuals_MAE={mae:.2f}.png")
+        plot_paths.append(os.path.join(p2models(), _model.name,
+                                       f"{_model.name}_residuals_MAE={mae:.2f}.png"))
 
         _fig = plt.figure(f"{_target.title()} Prediction Model Residuals MAE={mae:.2f}",
                           figsize=(10, 8))
@@ -243,14 +257,44 @@ def plot_prediction(_model, xdata, ydata):
         plt.ylabel(f"Prediction Error (pred-t)", fontsize=20)
 
         plt.tight_layout()
-        _fig.savefig(plot_path)
+
+    if save:
+        _fig.savefig(plot_paths[-1])
         plt.close()
+    else:
+        plt.show()
+
+    return plot_paths
 
 
 # %% Train model << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
+def model_for_data_exists(dataset_name: str, epochs: int):
+    """
+    Check whether there is a model which was trained on the given dataset already, with the same number of
+    given epochs.
+    :param dataset_name: name of dataset
+    :param epochs: number of epochs
+    :return: name of model if model found else None
+    """
+    model_name = f"PumpkinNet_{dataset_name.split('N-')[1]}"
+    model = load_trained_model(model_name=model_name, verbose=False)
+
+    if model is not None:
+        history_fn = os.path.join(p2models(), model.name, f"{model.name}_history.npy")
+        model_epochs = len(np.load(history_fn, allow_pickle=True).item()["loss"])
+
+        if epochs == model_epochs:
+            cprint(f"Found model '{model.name}' which was trained on given dataset with the "
+                   f"requested number of epochs (N={epochs}).", 'b')
+            return model.name
+        else:
+            cprint(f"Found model '{model.name}' which was trained on given dataset, but not with the "
+                   f"requested number of epochs ({model_epochs}!={epochs}).", 'y')
+
+
 @function_timed
-def train_simulation_model(pumpkin_set: classmethod, epochs: int = 80, batch_size: int = 4) -> str:
+def train_simulation_model(pumpkin_set, epochs: int = 80, batch_size: int = 4) -> str:
     """
     Train model on simulated dataset.
 
@@ -259,6 +303,10 @@ def train_simulation_model(pumpkin_set: classmethod, epochs: int = 80, batch_siz
     :param batch_size: size of batch
     :return: name of model
     """
+
+    already_trained = model_for_data_exists(dataset_name=pumpkin_set.name, epochs=epochs)
+    if isinstance(already_trained, str):  # ... is not None
+        return already_trained
 
     # Prep data for model
     xdata, ydata = pumpkin_set.data2numpy(for_keras=True)
@@ -281,7 +329,7 @@ def train_simulation_model(pumpkin_set: classmethod, epochs: int = 80, batch_siz
         save_weights_only=False,
         period=10,
         monitor="val_loss",
-        verbose=1),
+        verbose=0),
         keras.callbacks.TensorBoard(log_dir=f"{p2models()}/{model.name}/")]
     # , keras.callbacks.EarlyStopping()]
 
@@ -328,10 +376,11 @@ def crop_model_name(model_name: str) -> str:
     return model_name
 
 
-def load_trained_model(model_name: str = None):
+def load_trained_model(model_name: str = None, verbose: bool = True):
     """
     Load a (trained) model.
     :param model_name: name of model, can be None: then browsing option will be opened.
+    :param verbose: True: report if model wasn't found
     :return: trained model
     """
 
@@ -347,7 +396,9 @@ def load_trained_model(model_name: str = None):
                                                         crop_model_name(model_name),
                                                         model_name))
         else:
-            cprint(f"No model directory found for given model '{model_name}'", col='r')
+            if verbose:
+                cprint(f"No model directory found for given model '{model_name}'", col='r')
+            return None
 
     else:
         path2model = browse_files(p2models(), "H5")

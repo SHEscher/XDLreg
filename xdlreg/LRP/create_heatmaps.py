@@ -72,8 +72,7 @@ def create_relevance_dict(model_name: str, subset: str = "test",
 
 def plot_simulation_heatmaps(model_name: str, n_subjects: int = 20, subset: str = "test",
                              analyzer_type: str = "lrp.sequential_preset_a", pointers: bool = True,
-                             cbar: bool = False, true_scale: bool = False, fm: str = "pdf"):
-
+                             cbar: bool = False, true_scale: bool = False, fm: str = "png"):
     """
     Plot heatmaps/relevance maps for a set of subjects.
 
@@ -85,7 +84,7 @@ def plot_simulation_heatmaps(model_name: str, n_subjects: int = 20, subset: str 
                           types of analyzer, which iNNvestigate offers.
     :param pointers: Plots include markers which point to simulated lesions and atrophies in the image.
     :param cbar: Whether to add a color bar to the plot.
-    :param true-scale: True: do not normalize the relevance values between (-1, 1)
+    :param true_scale: True: do not normalize the relevance values between (-1, 1)
     :param fm: saving format of plot, including 'pdf', 'png' ...
     """
 
