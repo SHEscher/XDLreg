@@ -27,7 +27,8 @@ Here, LRP will be applied on the `PumpkinNet` extracting pixels in the simulated
 
 ## Setup
 It is recommended to use a new virtual environment `virtualenv` for installing and running the pipeline. 
-Note, the package was only tested for `Python3.7.6`. Since, the pipeline applies *native* `Keras` (v.2.2.4) with a respective older `tensorflow` (tf) backend (v.1.14.0rc1), later *Python* versions (3.8+) might not work. Also, up until now, there is no compatibility between older *tf* versions (v.1.+) and *M1* chips by *Apple*.
+
+Note, the package was only tested for `Python3.7.6`. Since, the pipeline applies *native* `Keras` (v.2.2.4) with a respective older `tensorflow` (tf) backend (v.1.14.0rc1), later *Python* versions (3.8+) might not work. Also, up until now, there is no compatibility between older *tf* versions (< v.2.+) and *M1* chips by *Apple*.
 
 ```console
 # Create virtual environment
