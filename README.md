@@ -2,7 +2,7 @@
 
 *Simulation study on explainable deep learning (XDL) for regression tasks.*
 
-`[Last update: 2021-04-01]`
+`[Last update: 2021-04-07]`
 
 <img src="Pumpkin.png" alt="PumpkinNet" width="350">
 
@@ -12,18 +12,18 @@
 `xdlreg/` contains the project code.
 
 ### PumpkinNet
-`xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al., 2021](DOI), which was trained on 3D-MRIs.
+`xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al. (2021)](DOI), which was trained on 3D-MRIs.
 
 ### Pumpkin dataset
-`xdlreg/SimulationData.py` is the code for the simulation of 2D-images of *pumpkin heads*. Ageing ist simulated in form of added *atrophies* and *lesions*.
+`xdlreg/SimulationData.py` is the code for the simulation of 2D-images of *pumpkin heads*. Ageing ist simulated in form of added *atrophies* and *lesions*. For details see the added *jupyter notebook*.
 
 ### LRP analysis
-In `xdlreg/LRP/` one can find the implementation of the *Layer-wise relevance propagation algorithm* (LRP), which highlights information in the input space being relevant for the given model prediction. <br>
-Here, the LRP will be applied on the `PumpkinNet` extracting pixels in the simulated images that were relevant for the model prediction.
+In `xdlreg/LRP/` one can find the implementation of the [*Layer-wise relevance propagation algorithm*](https://depositonce.tu-berlin.de/handle/11303/8813) (LRP), which highlights information in the input space that is relevant for the given model prediction. <br>
+Here, LRP will be applied on the `PumpkinNet` extracting pixels in the simulated images that were relevant for the model prediction.
 
-`xdlreg/LRP/create_heatmaps.py` contains functions to create relevance objects. That is, per sample the script can analyse the model prediction.
+`xdlreg/LRP/create_heatmaps.py` contains functions to create relevance objects. That is, per sample the script can analyse the model prediction of age.
 
-`xdlreg/LRP/apply_heatmap.py` contains functions for visualising LRP heatmaps.
+`xdlreg/LRP/apply_heatmap.py` contains functions for visualising LRP heatmaps (or *relevance maps*).
 
 ## Setup
 It is recommended to use a new virtual environment `virtualenv` for installing and running the pipeline.
@@ -77,8 +77,10 @@ xdlreg -h
 ```
 
 ## Jupyter notebooks
-The folder `jupyter notebooks/` contains a notebook for exploration of the functionality of this project.
+The folder `jupyter notebook/` contains a notebook for the exploration of the functionality of the introduced pipeline.
 
-## Cite
+## Citation
+
+In case of adaptation, and/or usage of this code, please cite:
 
 *add citation*
