@@ -1,6 +1,6 @@
 # XDLreg
 
-*Simulation study on explainable deep learning (XDL) for regression tasks.*
+*A package to study explainable deep learning (XDL) for regression tasks on a simulated image dataset.*
 
 `[Last update: 2021-04-07]`
 
