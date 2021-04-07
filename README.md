@@ -57,8 +57,9 @@ After installation, there are two ways to run the full pipeline, predicting age 
 ```python
 from xdlreg.run_simulation import run_simulation
 
-run_simulation(path=YOUR_PATH, n_samples=N_SAMPLES, uniform=TRUE/FALSE, target_bias=TARGET_BIAS, epochs=N_EPOCHS, plot_n_heatmaps=N_HEATMAPS_TO_PLOT)
-
+run_simulation(path=YOUR_PATH, n_samples=N_SAMPLES, uniform=TRUE/FALSE,
+               target_bias=TARGET_BIAS, epochs=N_EPOCHS,
+               plot_n_heatmaps=N_HEATMAPS_TO_PLOT)
 ```
 2. Or via a console (all *flags* are optional):
 
