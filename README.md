@@ -46,7 +46,7 @@ Installing goes via
 pip install PATH/TO/XDLreg
 
 # OR
-pip install GITHUB_ADDRESS
+pip install git+https://github.com/SHEscher/XDLreg.git
 ```
 
 ## Get started
