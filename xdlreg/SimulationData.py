@@ -23,6 +23,7 @@ from xdlreg.utils import (cprint, chop_microseconds, save_obj, load_obj, loop_ti
 # %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
 
 # Set params
+global max_age, min_age
 max_age = 80
 min_age = 20  # OR, e.g., min_age=4 for developmental factors (here: size of head)
 

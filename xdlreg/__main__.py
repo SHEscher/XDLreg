@@ -7,10 +7,6 @@ Execute __main__.py
 Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
 """
 
-# TODO Install locally [remove later]
-# python3 setup.py sdist bdist_wheel  # build
-# pip install -e ./XDLreg  # install as module
-
 # %% Import
 import os
 import argparse
@@ -23,7 +19,7 @@ from xdlreg.run_simulation import run_simulation
 def str2bool(v):
     """Convert bool-like string into bool."""
     if isinstance(v, bool):
-       return v
+        return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
     elif v.lower() in ('no', 'false', 'f', 'n', '0'):
@@ -38,7 +34,6 @@ def get_args():
     :return: valid arguments for PumpkinNet.run_simulation
     """
     parser = argparse.ArgumentParser(description="Arguments relevant for model training & heatmap plots.")
-    # TODO consider adding project path
     parser.add_argument('--path', type=str, default=os.getcwd(),
                         help='Number of samples in simulated dataset.')
     parser.add_argument('--n_samples', type=int, default=2000,
