@@ -18,7 +18,7 @@
 `xdlreg/SimulationData.py` is the code for the simulation of 2D-images of *pumpkin heads*. Ageing ist simulated in form of added *atrophies* and *lesions*. For details see the added *jupyter notebook*.
 
 ### LRP analysis
-In `xdlreg/LRP/` one can find the implementation of the [*Layer-wise relevance propagation algorithm*](https://depositonce.tu-berlin.de/handle/11303/8813) (LRP), which highlights information in the input space that is relevant for the given model prediction. <br>
+In `xdlreg/LRP/` one can find the implementation of the [*Layer-wise relevance propagation*](https://depositonce.tu-berlin.de/handle/11303/8813) (LRP) algorithm, which highlights information in the input space that is relevant for the given model prediction. <br>
 Here, LRP will be applied on the `PumpkinNet` extracting pixels in the simulated images that were relevant for the model prediction.
 
 `xdlreg/LRP/create_heatmaps.py` contains functions to create relevance objects. That is, per sample the script can analyse the model prediction of age.
@@ -79,6 +79,8 @@ xdlreg -h
 
 ## Jupyter notebooks
 The folder `jupyter notebook/` contains a notebook for the exploration of the functionality of the introduced pipeline.
+
+If you use `pip install` to get access to the `xdlreg` module, the `notebook` must be downloaded separately, and started within the same environment (e.g., `virtualenv`), where the module is installed.
 
 ## Citation
 
