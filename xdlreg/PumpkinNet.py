@@ -143,14 +143,14 @@ def plot_training_process(_model, save: bool = True):
         ax1.set_title('Performance')
         ax1.set_ylabel('accuracy' if _binary_cls else 'mean absolute error')
         ax1.set_xlabel('training epoch')
-        ax1.legend(['train', 'test'], loc='upper left')
+        ax1.legend(['train', 'val'], loc='upper left')
         # summarize history for loss
         ax2.plot(model_history['loss'])
         ax2.plot(model_history['val_loss'])
         ax2.set_title('Loss')
         ax2.set_ylabel('loss')
         ax2.set_xlabel('training epoch')
-        ax2.legend(['train', 'test'], loc='upper left')
+        ax2.legend(['train', 'val'], loc='upper left')
         plt.tight_layout()
         if save:
             fig.savefig(history_fn.replace(".npy", ".png"))
