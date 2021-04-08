@@ -44,8 +44,8 @@ cd YOUR_PATH
 
 Installing goes via
 ```console
-# after downloading/cloning the repository
-pip install PATH/TO/XDLreg
+# after downloading/cloning the repository (use -e flag for modifications if required)
+pip install -e PATH/TO/XDLreg
 
 # OR
 pip install git+https://github.com/SHEscher/XDLreg.git
@@ -82,7 +82,7 @@ xdlreg -h
 ## Explore simulated data, model, and relevance maps
 The folder `notebook/` contains a [`jupyter notebook`](https://jupyterlab.readthedocs.io/en/stable/getting_started/overview.html) for the exploration of the functionality of the introduced pipeline.
 
-If you use `pip install` to get access to the `xdlreg` module, the `notebook` must be downloaded separately, and started within the same environment (e.g., `virtualenv`), where the module is installed.
+If you use `pip install` directly from this `master` to get access to the `xdlreg` module, the `notebook` must be downloaded separately, and started within the same environment (e.g., `virtualenv`), where the module is installed.
 
 ```console
 # If necessary:
