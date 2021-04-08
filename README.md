@@ -6,7 +6,7 @@
 
 <img src="Pumpkin.png" alt="PumpkinNet" width="350">
 
-[![Python.pm](https://img.shields.io/badge/python-3.7-brightgreen.svg?maxAge=259200)](#) [![version](https://img.shields.io/badge/version-1.0.0-yellow.svg?maxAge=259200)](#)
+[![Python.pm](https://img.shields.io/badge/python-3.7≥version≥3.6-brightgreen.svg?maxAge=259200)](#) [![version](https://img.shields.io/badge/version-1.0.0-yellow.svg?maxAge=259200)](#)
 
 ## xdlreg
 `xdlreg/` contains the project code.
