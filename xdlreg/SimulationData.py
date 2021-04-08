@@ -361,7 +361,7 @@ class PumpkinSet:
             # Estimated time to create dataset
             t_est = (t * self.n_samples) / (os.cpu_count()*0.99)  # .99 = factor to start process
             cprint(f"Creating whole dataset via parallel processing on {os.cpu_count()} CPUs will take "
-                   f"about: {chop_microseconds(timedelta(seconds=t_est))} [h:m:s] ...", col='y')
+                   f"about: {chop_microseconds(timedelta(seconds=t_est))} [h:m:s] ...", col='y', ts=True)
 
             start_time = datetime.now()
             # Worker n_CPU * 2 works best
