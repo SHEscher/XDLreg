@@ -419,7 +419,7 @@ def get_model_data(model_name: str, for_keras: bool = True):
     age_bias = None if uniform else float(model_name.split("uniform")[-1])
     if for_keras:
         return get_pumpkin_set(n_samples=n_samples, uniform=uniform,
-                                 age_bias=age_bias).data2numpy(for_keras=True)
+                               age_bias=age_bias).data2numpy(for_keras=True)
     else:
         return get_pumpkin_set(n_samples=n_samples, uniform=uniform,
                                age_bias=age_bias)

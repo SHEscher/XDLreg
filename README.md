@@ -15,7 +15,7 @@
 `xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al. (2021)](DOI), which was trained on 3D-MRIs.
 
 ### Pumpkin dataset
-`xdlreg/SimulationData.py` is the code for the simulation of 2D-images of *pumpkin heads*. Ageing ist simulated in form of added *atrophies* and *lesions*. For details see the added *jupyter notebook*.
+`xdlreg/SimulationData.py` is the code for the simulation of 2D-images of *pumpkin heads*. Ageing ist simulated in form of added *atrophies* and *lesions*. For details visit the added `jupyter notebook`.
 
 ### LRP analysis
 In `xdlreg/LRP/` one can find the implementation of the [*Layer-wise relevance propagation*](https://depositonce.tu-berlin.de/handle/11303/8813) (LRP) algorithm, which highlights information in the input space that is relevant for the given model prediction. <br>
@@ -26,7 +26,7 @@ Here, LRP will be applied on the `PumpkinNet` extracting pixels in the simulated
 `xdlreg/LRP/apply_heatmap.py` contains functions for visualising LRP heatmaps (or *relevance maps*).
 
 ## Setup
-It is recommended to use a new virtual environment `virtualenv` for installing and running the pipeline. 
+It is recommended to use a new virtual environment `virtualenv` for installing and running the pipeline.
 
 Note, the package was only tested for `Python3.6.9` and `Python3.7.6`. Since, the pipeline applies *native* `Keras` (v.2.2.4) with a respective older `tensorflow` (tf) backend (v.1.14.0rc1), later *Python* versions (v.3.8+) do not work. Also, up until now, there is no compatibility between older *tf* versions (< v.2.+) and *M1* chips (since late 2020) by *Apple*.
 
@@ -79,10 +79,21 @@ For and more information on each FLAG, type:
 xdlreg -h
 ```
 
-## Jupyter notebooks
-The folder `jupyter notebook/` contains a notebook for the exploration of the functionality of the introduced pipeline.
+## Explore simulated data, model, and relevance maps
+The folder `notebook/` contains a [`jupyter notebook`](https://jupyterlab.readthedocs.io/en/stable/getting_started/overview.html) for the exploration of the functionality of the introduced pipeline.
 
 If you use `pip install` to get access to the `xdlreg` module, the `notebook` must be downloaded separately, and started within the same environment (e.g., `virtualenv`), where the module is installed.
+
+```console
+# If necessary:
+pip install jupyterlab
+
+# Add kernel
+ipython kernel install --name "VENV_DIR" --user
+
+# Start notebook
+jupyter lab PATH/TO/notebook/LRP4RegressionSimulation.ipynb
+```
 
 ## Citation
 

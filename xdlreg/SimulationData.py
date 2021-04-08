@@ -406,12 +406,13 @@ class PumpkinSet:
         return xdata, ydata
 
 
-def get_pumpkin_set(n_samples: int = 2000, uniform: bool = True, age_bias: float = None):
+def get_pumpkin_set(n_samples: int = 2000, uniform: bool = True, age_bias: float = None, verbose=False):
     """
     Get dataset (class PumpkinSet) with given properties (**kwargs) either from memory, or generates it.
     :param n_samples: number of samples in dataset
     :param uniform: whether dataset is uniformly distributed
     :param age_bias: for non-uniform datasets provide age-bias.
+    :param verbose: print whether dataset file was found.
     :return: dataset (class PumpkinSet)
     """
     assert n_samples >= 100, "Simulated dataset can't be smaller than a 100 samples."
@@ -421,7 +422,8 @@ def get_pumpkin_set(n_samples: int = 2000, uniform: bool = True, age_bias: float
 
     for file in df_files:
         if f_suffix in file:
-            cprint(f"Found & loaded following dataset file: {file} ...", 'b')
+            if verbose:
+                cprint(f"Found & loaded following dataset file: {file} ...", 'b')
             return load_obj(name=file, folder=p2data())
             # return load_pumpkin_set(name=file)
 
