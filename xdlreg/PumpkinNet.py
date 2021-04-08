@@ -143,14 +143,14 @@ def plot_training_process(_model, save: bool = True):
         ax1.set_title('Performance')
         ax1.set_ylabel('accuracy' if _binary_cls else 'mean absolute error')
         ax1.set_xlabel('training epoch')
-        ax1.legend(['train', 'val'], loc='upper left')
+        ax1.legend(['train', 'validation'], loc='upper left')
         # summarize history for loss
         ax2.plot(model_history['loss'])
         ax2.plot(model_history['val_loss'])
         ax2.set_title('Loss')
         ax2.set_ylabel('loss')
         ax2.set_xlabel('training epoch')
-        ax2.legend(['train', 'val'], loc='upper left')
+        ax2.legend(['train', 'validation'], loc='upper left')
         plt.tight_layout()
         if save:
             fig.savefig(history_fn.replace(".npy", ".png"))
@@ -254,7 +254,7 @@ def plot_prediction(_model, xdata, ydata, save: bool = True):
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
         plt.xlabel(f"True-{_target.upper()}", fontsize=20)
-        plt.ylabel(f"Prediction Error (pred-t)", fontsize=20)
+        plt.ylabel(f"Prediction Error (prediction - target)", fontsize=20)
 
         plt.tight_layout()
 

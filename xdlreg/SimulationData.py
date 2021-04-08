@@ -43,6 +43,9 @@ def make_pumpkin(age: int, img_size: tuple = (98, 98)) -> np.ndarray:
     :param img_size: image size
     :return: pumpkin head
     """
+
+    assert age > 0, "age must be greater than zero."
+
     # Size of pumpkin with some random variance
     p_size = (40 + 2 * np.clip(age, 0, 20),  # i.e. for age >= 20, standard 'brain' size is (80, 65) + v
               25 + 2 * np.clip(age, 0, 20))
@@ -345,7 +348,7 @@ class PumpkinSet:
             # Shuffle order
             np.random.shuffle(self._age_distribution)
 
-    @function_timed
+    # @function_timed
     def _generate_data(self) -> None:
         """
         Generate image data for dataset (N=self.n_samples).

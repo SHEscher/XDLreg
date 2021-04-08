@@ -72,7 +72,7 @@ def create_relevance_dict(model_name: str, subset: str = "test",
 
 def plot_simulation_heatmaps(model_name: str, n_subjects: int = 20, subset: str = "test",
                              analyzer_type: str = "lrp.sequential_preset_a", pointers: bool = True,
-                             cbar: bool = False, true_scale: bool = False, fm: str = "png"):
+                             cbar: bool = True, true_scale: bool = False, fm: str = "png"):
     """
     Plot heatmaps/relevance maps for a set of subjects.
 
