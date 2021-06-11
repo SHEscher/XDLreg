@@ -2,7 +2,7 @@
 
 *A package to study explainable deep learning (XDL) for regression tasks on a simulated image dataset.*
 
-`[Last update: 2021-04-08]`
+`[Last update: 2021-06-11]`
 
 <img src="Pumpkin.png" alt="PumpkinNet" width="350">
 
@@ -74,7 +74,7 @@ xdlreg /
   --epochs NUMBER_OF_EPOCHS/
   --plot_n_heatmaps
 ```
-For and more information on each FLAG, type:
+For more information on each FLAG, type:
 ```console
 xdlreg -h
 ```
