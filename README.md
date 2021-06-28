@@ -2,7 +2,7 @@
 
 *A package to study explainable deep learning (XDL) for regression tasks on a simulated image dataset.*
 
-`[Last update: 2021-06-11]` 
+`[Last update: 2021-06-28]` 
 
 <img src="Pumpkin.png" alt="PumpkinNet" width="350">
 
