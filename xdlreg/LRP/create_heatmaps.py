@@ -6,7 +6,7 @@ Create LRP heatmaps for prediction model.
 * contains most pragmatic implementation of LRP.
 * requirements: prediction model must be implemented in (native) Keras
 
-Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
+Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021-2022
 """
 
 # %% Import
@@ -141,15 +141,15 @@ def plot_simulation_heatmaps(model_name: str, n_subjects: int = 20, subset: str 
             os.makedirs(parent_dir)
         plt.savefig(os.path.join(parent_dir, f"LRP_S{sub}_age-{sub_y}_pred-{sub_yt:.1f}.{fm}"))
 
-        if pointers:
+        if pointers and pdata.growth_mode == "human":  # exclude data
             phead = pdata.data[didx[0]+sub]
 
             # Mark atrophies
-            for coord in phead.atrophy_coords:
+            for coord in phead.atrophy_coordinates:
                 plt.plot(coord[1], coord[0], "s", color="#D3F5D4", ms=2, alpha=.9)  # ms=4: full-pixel
 
             # Arrows to lesions
-            for coord in phead.lesion_coords:
+            for coord in phead.lesion_coordinates:
                 # Shadow
                 plt.annotate(text='', xy=coord[::-1],
                              xytext=np.array(coord[::-1]) + [-4.6, 5.4],

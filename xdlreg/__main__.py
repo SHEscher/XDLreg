@@ -4,7 +4,7 @@
 """
 Execute __main__.py
 
-Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
+Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021-2022
 """
 
 # %% Import
@@ -14,7 +14,7 @@ from xdlreg.utils import end
 from xdlreg.run_simulation import run_simulation
 
 
-# %% Run simulation when main is called << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
+# %% Run simulation when main is called < o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o
 
 def str2bool(v):
     """Convert bool-like string into bool."""
@@ -43,7 +43,10 @@ def get_args():
     parser.add_argument('--target_bias', type=float, default=None,
                         help='For non-uniformly distributed datasets a distribution bias can be set, '
                              'i.e., the majority of samples will be drawn from this bias.')
-    parser.add_argument('--epochs', type=int, default=80,
+    parser.add_argument('--growth_mode', type=str, default="human",
+                        help='Defines how pumpkins grow with age. Only if set to "human"'
+                             'pumpkins do suffer lesions and atrophies with age.')
+    parser.add_argument('--epochs', type=int, default=25,
                         help='Number of training iterations.')
     parser.add_argument('--plot_n_heatmaps', type=int, default=20,
                         help='Number of heatmaps which are to be plotted.')

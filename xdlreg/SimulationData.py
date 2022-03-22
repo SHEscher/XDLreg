@@ -1,7 +1,7 @@
 """
 Create simulation data.
 
-Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
+Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021-2022
 """
 
 # %% Import
@@ -18,14 +18,19 @@ import seaborn as sns
 from skimage import draw
 
 from xdlreg import utils
-from xdlreg.utils import (cprint, chop_microseconds, save_obj, load_obj, loop_timer, function_timed)
+from xdlreg.utils import cprint, chop_microseconds, save_obj, load_obj, loop_timer  # function_timed
 
 # %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
 
 # Set params
-global max_age, min_age
+# global max_age, min_age
 max_age = 80
-min_age = 20  # OR, e.g., min_age=4 for developmental factors (here: size of head)
+min_age = 20  # OR, e.g., min_age = 4 for developmental factors (here: size of head)
+growth_mode_suffix = {  # suffix must be max 2 chars
+    "human": "",
+    "eternal": "_et",
+    "tang_ping": "_tp"  # 躺平 ('lying flat')
+}
 
 
 # Set Paths
@@ -35,21 +40,31 @@ def p2data():
 
 # %% Create image data ("Pumpkins") << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >>
 
-def make_pumpkin(age: int, img_size: tuple = (98, 98)) -> np.ndarray:
+def make_pumpkin(age: int, img_size: tuple = (98, 98), growth_mode: str = "human") -> np.ndarray:
     """
     Create elliptic shape of random (head) size. Thickness grows proportionally. Add noise.
     This is template for the PumpkinHead class.
     :param age: age of pumpkin, here only for general 'head' size of pumpkin.
     :param img_size: image size
+    :param growth_mode: defines how pumpkins grow with age
     :return: pumpkin head
     """
 
     assert age > 0, "age must be greater than zero."
 
     # Size of pumpkin with some random variance
-    p_size = (40 + 2 * np.clip(age, 0, 20),  # i.e. for age >= 20, standard 'brain' size is (80, 65) + v
-              25 + 2 * np.clip(age, 0, 20))
-    p_size += np.random.normal(loc=0, scale=p_size[0] / 20, size=2)  # v
+    if growth_mode == "eternal":
+        # pumpkins grow in size with age
+        p_size = (80 * age / max_age,  # -> for age == 80, standard 'brain' size is (80, 65) + v
+                  65 * age / max_age)  # -> for age == 20, standard 'brain' size is (20, 16.25) + v
+    elif growth_mode == "tang_ping":
+        # pumpkins are first tall and then become flat with age. In mid-age they are round
+        p_size = (80 * (min_age + max_age - age) / max_age,  # age == 80 -> (20, 80) + v
+                  80 * age / max_age)  # -> for age == 20, standard 'brain' size is (80, 20) + v
+    else:
+        p_size = (40 + 2 * np.clip(age, 0, 20),  # -> for age >= 20, standard 'brain' size is (80, 65) + v
+                  25 + 2 * np.clip(age, 0, 20))
+    p_size += np.random.normal(loc=0, scale=p_size[0] / min_age, size=2)  # v
 
     # Draw outer ellipse
     rr, cc = draw.ellipse(r=img_size[0] // 2, c=img_size[1] // 2,
@@ -88,22 +103,24 @@ def random_name() -> str:
 class PumpkinHead:
     """Class of ageing pumpkin heads."""
 
-    def __init__(self, age, name=None):
+    def __init__(self, age: int, name=None, growth_mode: str = "human"):
         """
         Create instance of PumpkinHead.
         :param age: age of pumpkin.
         :param name: name of pumpkin. If not given (None), will be automatically generated.
+        :param growth_mode: defines how pumpkins grow with age
         """
         self.age = age
         self.name = random_name() if name is None else name
-        self.pumpkin_brain = make_pumpkin(age=age)
+        self.pumpkin_brain = make_pumpkin(age=age, growth_mode=growth_mode)
         self.n_lesions = None
-        self.lesion_coords = []
+        self.lesion_coordinates = []
         self.n_atrophies = None
-        self.atrophy_coords = []
-        self.grow()
+        self.atrophy_coordinates = []
+        if growth_mode == "human":
+            self.ageing()
 
-    def grow(self):
+    def ageing(self):
         """
         Run several ageing processes on self.pumpkin_brain as function of self.age
         """
@@ -160,7 +177,7 @@ class PumpkinHead:
                 if np.random.binomial(n=1, p=prob_atrophy):
                     self.pumpkin_brain[xi, yi] = 0
 
-                    self.atrophy_coords.append((xi, yi))  # add location of athropy to list
+                    self.atrophy_coordinates.append((xi, yi))  # add location of athropy to list
 
                     ctn_atrophies += 1
 
@@ -209,7 +226,7 @@ class PumpkinHead:
 
                 self.pumpkin_brain[xi - 1: xi + 2, yi - 1: yi + 2] = lesion
 
-                self.lesion_coords.append((xi, yi))
+                self.lesion_coordinates.append((xi, yi))
 
                 ctn_lesions += 1
 
@@ -228,30 +245,34 @@ class PumpkinHead:
 
 # %% Create dataset << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><<
 
-def generate_set_name(n_samples: int, uniform: bool, age_bias) -> str:
+def generate_set_name(n_samples: int, uniform: bool, age_bias: float, growth_mode: str) -> str:
     """
     Generate the name of a simulated dataset as function of given arguments.
     :param n_samples: number of samples in dataset
     :param uniform: whether dataset is uniformly distributed
     :param age_bias: None (only for uniform datasets) OR certain age int/flaot (uniform / non-uniform)
-    :return: name of dataset (will be used as suffiix after time-stamp)
+    :param growth_mode: defines how pumpkins grow with age
+    :return: name of dataset (will be used as suffix after time-stamp)
     """
+
     if not uniform:
         assert age_bias is not None, "For non-uniform datasets, age_bias must be provided."
-    return f"N-{n_samples}_{'' if uniform else 'non-'}uniform" + ("" if uniform else f"{age_bias:.1f}")
+    return f"N-{n_samples}_{'' if uniform else 'non-'}uniform" + (
+        "" if uniform else f"{age_bias:.1f}") + growth_mode_suffix[growth_mode]
 
 
 class PumpkinSet:
     """Dataset class of simulated head images ('pumpkins')."""
 
     def __init__(self, n_samples: int, uniform: bool = True, age_bias: float = None,
-                 skew_factor: float = .8, save: bool = True):
+                 skew_factor: float = .8, growth_mode: str = "human", save: bool = True):
         """
         Create instance of PumpkinSet class.
         :param n_samples: number of samples in dataset
         :param uniform: whether dataset is uniformly distributed
         :param age_bias: for non-uniform datasets provide age-bias.
         :param skew_factor: parameter which influences the data distribution (only for non-uniform)
+        :param growth_mode: defines how pumpkis grow with age
         :param save: Whether to save dataset externally.
         """
         self._n_samples = n_samples
@@ -260,8 +281,9 @@ class PumpkinSet:
         self._is_uniform = uniform
         self._draw_sample_distribution(uniform=uniform, age_bias=age_bias, skew_factor=skew_factor)
         self._data = [None] * n_samples
-        self._name = datetime.now().strftime('%Y-%m-%d_%H-%M_') + generate_set_name(n_samples, uniform,
-                                                                                    age_bias)
+        self._name = datetime.now().strftime('%Y-%m-%d_%H-%M_') + generate_set_name(
+            n_samples, uniform, age_bias, growth_mode)
+        self.growth_mode = growth_mode
         self._generate_data()
         if save:
             self.save()
@@ -358,7 +380,8 @@ class PumpkinSet:
             cprint(f"Start creating the pumpkin dataset of {self.name} ...", 'b')
 
             t = timeit.timeit(
-                stmt="PumpkinHead(np.random.randint(low=min_age, high=max_age+1))",
+                stmt="PumpkinHead(np.random.randint(low=min_age, high=max_age+1), name=None, "
+                     "growth_mode=growth_mode)",
                 setup="from xdlreg.SimulationData import PumpkinHead, np, min_age, max_age",
                 number=3)/3  # approx. time to create one PumpkinHead
             # Estimated time to create dataset
@@ -369,17 +392,20 @@ class PumpkinSet:
             start_time = datetime.now()
             # Worker n_CPU * 2 works best
             with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count() * 2) as executor:
-                heads = executor.map(PumpkinHead, self.age_distribution)
+                heads = executor.map(PumpkinHead,  # function/class to map
+                                     self.age_distribution,  # arg1: age
+                                     [None] * len(self._data)  # arg2: name
+                                     [self.growth_mode] * len(self._data))  # arg3: growth_mode
             self._data = list(heads)
             cprint(f"Created {self.n_samples} pumpkins in "
-                   f"{chop_microseconds(datetime.now() - start_time)} [hh:min:sec].", 'b')
+                   f"{chop_microseconds(datetime.now() - start_time)} [hh:min:sec].", col='b')
 
         except Exception as e:
             # print(e)  # print for testing
             cprint("Parallel processing failed. Use loop instead ...", col='r')
             start_time = datetime.now()
             for i, age in enumerate(self.age_distribution):
-                self._data[i] = PumpkinHead(age=age)
+                self._data[i] = PumpkinHead(age=age, growth_mode=self.growth_mode)
                 loop_timer(start_time=start_time, loop_length=self.n_samples, loop_idx=i,
                            loop_name="Create Pumpkin Dataset")
 
@@ -409,19 +435,24 @@ class PumpkinSet:
         return xdata, ydata
 
 
-def get_pumpkin_set(n_samples: int = 2000, uniform: bool = True, age_bias: float = None, verbose=False):
+def get_pumpkin_set(n_samples: int = 2000, uniform: bool = True, age_bias: float = None,
+                    growth_mode: str = "human", verbose: bool = False):
     """
     Get dataset (class PumpkinSet) with given properties (**kwargs) either from memory, or generates it.
-    :param n_samples: number of samples in dataset
-    :param uniform: whether dataset is uniformly distributed
+
+    :param n_samples: number of samples in dataset.
+    :param uniform: whether dataset is uniformly distributed.
     :param age_bias: for non-uniform datasets provide age-bias.
+    :param growth_mode: defines how pumpkins grow with age
     :param verbose: print whether dataset file was found.
     :return: dataset (class PumpkinSet)
     """
     assert n_samples >= 100, "Simulated dataset can't be smaller than a 100 samples."
+    assert growth_mode in growth_mode_suffix.keys(), f"'growth_mode' must be in: " \
+                                                     f"{list(growth_mode_suffix.keys())}!"
 
     df_files = os.listdir(p2data()) if os.path.exists(p2data()) else []
-    f_suffix = generate_set_name(n_samples, uniform, age_bias)
+    f_suffix = generate_set_name(n_samples, uniform, age_bias, growth_mode)
 
     for file in df_files:
         if f_suffix in file:
@@ -432,7 +463,8 @@ def get_pumpkin_set(n_samples: int = 2000, uniform: bool = True, age_bias: float
 
     else:
         cprint(f"No dataset found. Start creating it ...", 'b')
-        return PumpkinSet(n_samples=n_samples, uniform=uniform, age_bias=age_bias, save=True)
+        return PumpkinSet(n_samples=n_samples, uniform=uniform, age_bias=age_bias,
+                          growth_mode=growth_mode, save=True)
 
 
 # %% Prepare data for model training << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >

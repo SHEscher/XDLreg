@@ -12,7 +12,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="XDLreg",
-    version="1.0.0",
+    version="1.1.0",
     description="Simulation study on explainable deep learning (XDL) for regression tasks.",
     long_description=README,
     long_description_content_type="text/markdown",

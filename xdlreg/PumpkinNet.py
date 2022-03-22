@@ -1,7 +1,7 @@
 """
 Create deep convolutional neural network.
 
-Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021
+Author: Simon M. Hofmann | <[firstname].[lastname][at]pm.me> | 2021-2022
 """
 
 # %% Import
@@ -18,7 +18,7 @@ import seaborn as sns
 
 from xdlreg import utils
 from xdlreg.utils import cprint, browse_files, function_timed
-from xdlreg.SimulationData import split_simulation_data, get_pumpkin_set
+from xdlreg.SimulationData import split_simulation_data, get_pumpkin_set, growth_mode_suffix
 
 
 # %% Set global params << o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >><< o >
@@ -414,14 +414,27 @@ def get_model_data(model_name: str, for_keras: bool = True):
     :param for_keras: True: prepare data, such that they can directly used for the given model
     :return: dataset for model training and evaluation
     """
-    n_samples = int(model_name.split("_")[-2])
+    n_samples = int(model_name.split("_")[1])
     uniform = "non-uni" not in model_name
-    age_bias = None if uniform else float(model_name.split("uniform")[-1])
+    age_bias = None if uniform else float(model_name.split("uniform")[1].split("_")[0])
+
+    growth_mode = None  # init
+    if model_name[-3] == "_":
+        # has growth_mode other than "human"
+        msuff = model_name.split("_")[-1]
+        for growth_mode, suff in growth_mode_suffix.items():
+            if growth_mode == "human":
+                continue
+            elif msuff == suff[1:]:
+                break
+    else:
+        growth_mode = "human"
+
     if for_keras:
         return get_pumpkin_set(n_samples=n_samples, uniform=uniform,
-                               age_bias=age_bias).data2numpy(for_keras=True)
+                               age_bias=age_bias, growth_mode=growth_mode).data2numpy(for_keras=True)
     else:
         return get_pumpkin_set(n_samples=n_samples, uniform=uniform,
-                               age_bias=age_bias)
+                               age_bias=age_bias, growth_mode=growth_mode)
 
 # <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> ooo <<<<<<<<<<< ooo >>>>>>>>>>>>>> END
