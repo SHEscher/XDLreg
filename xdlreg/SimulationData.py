@@ -29,7 +29,8 @@ min_age = 20  # OR, e.g., min_age = 4 for developmental factors (here: size of h
 growth_mode_suffix = {  # suffix must be max 2 chars
     "human": "",
     "eternal": "_et",
-    "tang_ping": "_tp"  # 躺平 ('lying flat')
+    "tang_ping": "_tp",  # 躺平 ('lying flat')
+    "no_growth": "_ng"
 }
 
 
@@ -61,7 +62,11 @@ def make_pumpkin(age: int, img_size: tuple = (98, 98), growth_mode: str = "human
         # pumpkins are first tall and then become flat with age. In mid-age they are round
         p_size = (80 * (min_age + max_age - age) / max_age,  # age == 80 -> (20, 80) + v
                   80 * age / max_age)  # -> for age == 20, standard 'brain' size is (80, 20) + v
-    else:
+
+    elif growth_mode == "no_growth":
+        p_size = (80, 65)  # all ages have the same size
+
+    else:  # assuming growth_mode == "human"
         p_size = (40 + 2 * np.clip(age, 0, 20),  # -> for age >= 20, standard 'brain' size is (80, 65) + v
                   25 + 2 * np.clip(age, 0, 20))
     p_size += np.random.normal(loc=0, scale=p_size[0] / min_age, size=2)  # v
@@ -112,20 +117,26 @@ class PumpkinHead:
         """
         self.age = age
         self.name = random_name() if name is None else name
+        self.growth_mode = growth_mode
         self.pumpkin_brain = make_pumpkin(age=age, growth_mode=growth_mode)
         self.n_lesions = None
         self.lesion_coordinates = []
         self.n_atrophies = None
         self.atrophy_coordinates = []
-        if growth_mode == "human":
-            self.ageing()
+        self.ageing()
 
     def ageing(self):
         """
         Run several ageing processes on self.pumpkin_brain as function of self.age
         """
-        self.add_lesions()
-        self.add_atrophies()
+        if self.growth_mode == "human":
+            self.add_lesions()
+            self.add_atrophies()
+        elif self.growth_mode == "no_growth":
+            self.add_tumor()
+        else:
+            # Other modes of growth do not accompany specific ageing processes
+            pass
 
     def add_atrophies(self, **kwargs):
         """
@@ -230,6 +241,36 @@ class PumpkinHead:
 
                 ctn_lesions += 1
 
+    def add_tumor(self):
+        """
+        Add local tumor within the self.pumpkin_brain of a set size.
+        Increase image intensity of tumor gradually as function of age.
+        """
+        # Get center of upper torus
+        y = self.pumpkin_brain.shape[1] // 2  # for width just take the middle of image
+        x1 = 0  # upper bound
+        for x1 in range(self.pumpkin_brain.shape[0]):
+            if self.pumpkin_brain[x1, :].sum() > 0:
+                break
+
+        x2 = x1  # lower bound of upper part of torus (i.e., upper edge of hole in the middle)
+        for x2 in range(x1, self.pumpkin_brain.shape[0]):
+            if self.pumpkin_brain[x2, y] == 0:
+                break
+
+        # # Add tumor
+        height = x2 - x1  # height of upper bow of torus
+        tumor_slice = (slice(x1 + (height//10), x2 - (height//10)),
+                       slice(y - (height//3), y + (height//3)))
+
+        # Set location first to alomst-zero and then increase intensity of tumor as function of age
+        self.pumpkin_brain[tumor_slice] = np.random.normal(scale=.025)
+        tumor = np.clip(a=self.pumpkin_brain[tumor_slice] + (
+                self.age / max_age + np.random.normal(scale=.025)),
+                        a_min=0, a_max=1)
+
+        self.pumpkin_brain[tumor_slice] = tumor
+
     def exhibition(self, **kwargs):
         """
         Plot pumpkin head.
@@ -322,7 +363,7 @@ class PumpkinSet:
     def display_distrubtion(self) -> None:
         """Plot the age distribution of the simulated dataset."""
         plt.figure(f"Age distribution in {self.name}", figsize=(6, 4), dpi=150)
-        h = sns.histplot(self.age_distribution, binwidth=1, kde=True, color="cadetblue", alpha=.5)
+        h = sns.histplot(self.age_distribution, binheight=1, kde=True, color="cadetblue", alpha=.5)
         ymax = int(h.axes.get_ylim()[-1] * .9)
         if self.age_bias is not None:
             plt.vlines(x=self.age_bias, ymin=0, ymax=ymax, colors="red", ls="dotted", label="age-bias")
