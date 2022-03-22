@@ -6,7 +6,7 @@
 
 <img src="Pumpkin.png" alt="PumpkinNet" width="350">
 
-[![Python.pm](https://img.shields.io/badge/python-3.7≥version≥3.6-brightgreen.svg?maxAge=259200)](#) [![version](https://img.shields.io/badge/version-1.0.0-yellow.svg?maxAge=259200)](#)
+[![Python.pm](https://img.shields.io/badge/python-3.7≥version≥3.6-brightgreen.svg?maxAge=259200)](#) [![version](https://img.shields.io/badge/version-1.1.0-yellow.svg?maxAge=259200)](#)
 
 ## xdlreg
 `xdlreg/` contains the project code.
@@ -71,6 +71,7 @@ xdlreg /
   --n_samples N_SAMPLES /
   --uniform BOOL /
   --target_bias TARGET_BIAS/
+  --growth_mode GROWTH_MODE/
   --epochs NUMBER_OF_EPOCHS/
   --plot_n_heatmaps
 ```
@@ -113,3 +114,11 @@ In case of adaptation, and/or usage of this code, please cite:
 	journal = {bioRxiv}
 }
 ```
+
+## Versions 
+
+### Version 1.1.0
+
+* included additional modes of pumpkin growth
+* growth modes come with corresponding ageing processes 
+* *flags* of `xdlreg` include `--growth_mode` now
