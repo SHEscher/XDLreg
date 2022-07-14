@@ -2,7 +2,7 @@
 
 *A package to study explainable deep learning (XDL) for regression tasks on a simulated image dataset.*
 
-`[Last update: 2022-03-22]` 
+`[Last update: 2022-07-14]`
 
 <img src="Pumpkin.png" alt="PumpkinNet" width="350">
 
@@ -12,7 +12,7 @@
 `xdlreg/` contains the project code.
 
 ### PumpkinNet
-`xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al. Towards the Interpretability of Deep Learning Models for Human Neuroimaging. 2021](https://doi.org/10.1101/2021.06.25.449906), which was trained on 3D-MRIs.
+`xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al. Towards the Interpretability of Deep Learning Models for Multi-modal Neuroimaging: Finding Structural Changes of the Ageing Brain. 2022](https://doi.org/10.1101/2021.06.25.449906), which was trained on 3D-MRIs.
 
 ### Pumpkin dataset
 `xdlreg/SimulationData.py` is the code for the simulation of 2D-images of *pumpkin heads*. Ageing ist simulated in form of added *atrophies* and *lesions*. For details visit the added `jupyter notebook`.
@@ -102,23 +102,23 @@ In case of adaptation, and/or usage of this code, please cite:
 
 ```
 @article {Hofmann2021.06.25.449906,
-	author = {Hofmann, Simon M. and Beyer, Frauke and Lapuschkin, Sebastian and Markus, Loeffler and Mueller, Klaus-Robert and Villringer, Arno and Samek, Wojciech and Witte, A. Veronica},
-	title = {Towards the Interpretability of Deep Learning Models for Human Neuroimaging},
+	author = {Hofmann, Simon M. and Beyer, Frauke and Lapuschkin, Sebastian and Goltermann, Ole and Loeffler, Markus and M{\"u}ller, Klaus-Robert and Villringer, Arno and Samek, Wojciech and Witte, A. Veronica},
+	title = {Towards the Interpretability of Deep Learning Models for Multi-modal Neuroimaging: Finding Structural Changes of the Ageing Brain},
 	elocation-id = {2021.06.25.449906},
-	year = {2021},
+	year = {2022},
 	doi = {10.1101/2021.06.25.449906},
 	publisher = {Cold Spring Harbor Laboratory},
-	abstract = {Brain-age (BA) estimates based on deep learning are increasingly used as neuroimaging biomarker for brain health; however, the underlying neural features have remained unclear. We combined ensembles of convolutional neural networks with Layer-wise Relevance Propagation (LRP) to detect which brain features contribute to BA. Trained on magnetic resonance imaging (MRI) data of a population-based study (n=2637, 18-82 years), our models estimated age accurately based on single and multiple modalities, regionally restricted and whole-brain images (mean absolute errors 3.38-5.07 years). We find that BA estimates capture aging at both small and large-scale changes, revealing gross enlargements of ventricles and subarachnoid spaces, as well as lesions, iron accumulations and atrophies that appear throughout the brain. Divergence from expected aging reflected cardiovascular risk factors and accelerated aging was more pronounced in the frontal lobe. Applying LRP, our study demonstrates how superior deep learning models detect brain-aging in healthy and at-risk individuals throughout adulthood.Competing Interest StatementThe authors have declared no competing interest.},
-	URL = {https://www.biorxiv.org/content/early/2021/06/26/2021.06.25.449906},
-	eprint = {https://www.biorxiv.org/content/early/2021/06/26/2021.06.25.449906.full.pdf},
+	abstract = {Brain-age (BA) estimates based on deep learning are increasingly used as neuroimaging biomarker for brain health; however, the underlying neural features have remained unclear. We combined ensembles of convolutional neural networks with Layer-wise Relevance Propagation (LRP) to detect which brain features contribute to BA. Trained on magnetic resonance imaging (MRI) data of a population-based study (n=2637, 18-82 years), our models estimated age accurately based on single and multiple modalities, regionally restricted and whole-brain images (mean absolute errors 3.37-3.86 years). We find that BA estimates capture aging at both small and large-scale changes, revealing gross enlargements of ventricles and subarachnoid spaces, as well as white matter lesions, and atrophies that appear throughout the brain. Divergence from expected aging reflected cardiovascular risk factors and accelerated aging was more pronounced in the frontal lobe. Applying LRP, our study demonstrates how superior deep learning models detect brain-aging in healthy and at-risk individuals throughout adulthood.Competing Interest StatementThe authors have declared no competing interest.},
+	URL = {https://www.biorxiv.org/content/early/2022/06/08/2021.06.25.449906},
+	eprint = {https://www.biorxiv.org/content/early/2022/06/08/2021.06.25.449906.full.pdf},
 	journal = {bioRxiv}
 }
 ```
 
-## Versions 
+## Versions
 
 ### Version 1.1.0
 
 * included additional modes of pumpkin growth
-* growth modes come with corresponding ageing processes 
+* growth modes come with corresponding ageing processes
 * *flags* of `xdlreg` include `--growth_mode` now
