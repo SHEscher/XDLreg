@@ -14,7 +14,7 @@
 
 ### PumpkinNet
 
-`xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al. Towards the Interpretability of Deep Learning Models for Multi-modal Neuroimaging: Finding Structural Changes of the Ageing Brain. in *NeuroImage*, 2022](https://doi.org/10.1016/j.neuroimage.2022.119504), which was trained on 3D-MRIs.
+`xdlreg/PumpkinNet.py` contains the implementation of a 2D-convolutional neural network (CNN) model for the prediction of *age* from 2D simulated images (*pumpkins*). The model is a 2D-adaptation of the brain-age prediction model reported in [Hofmann et al. Towards the Interpretability of Deep Learning Models for Multi-modal Neuroimaging: Finding Structural Changes of the Ageing Brain. In *NeuroImage*, 2022](https://doi.org/10.1016/j.neuroimage.2022.119504), which was trained on 3D-MRIs.
 
 ### Pumpkin dataset
 
